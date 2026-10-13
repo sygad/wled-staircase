@@ -1,0 +1,96 @@
+# Automation: Staircase - Apply Effect
+# Settings -> Automations -> Create automation -> three-dot menu -> Edit in YAML -> paste.
+# Dropdown -> WLED preset, and WLED preset -> dropdown (keeps them in sync after a power cut).
+alias: Staircase - Apply Effect
+description: >-
+  Applies the WLED staircase preset chosen in input_select.staircase_effect
+  (All / Sweep / Rainbow), and keeps the dropdown in sync when the controller
+  changes preset itself (e.g. Sweep after a power cut).
+mode: queued
+triggers:
+  - trigger: state
+    entity_id: input_select.staircase_effect
+    to: All
+    id: set_all
+  - trigger: state
+    entity_id: input_select.staircase_effect
+    to: Sweep
+    id: set_sweep
+  - trigger: state
+    entity_id: input_select.staircase_effect
+    to: Rainbow
+    id: set_rainbow
+  - trigger: state
+    entity_id: select.DEVICE_preset
+    to: Staircase All
+    id: is_all
+  - trigger: state
+    entity_id: select.DEVICE_preset
+    to: Staircase Warm
+    id: is_sweep
+  - trigger: state
+    entity_id: select.DEVICE_preset
+    to: Staircase Rainbow
+    id: is_rainbow
+actions:
+  - choose:
+      - alias: All - every stair on/off together (single segment)
+        conditions:
+          - condition: trigger
+            id: set_all
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.DEVICE_preset
+            data:
+              option: Staircase All
+      - alias: Sweep - warm white staircase
+        conditions:
+          - condition: trigger
+            id: set_sweep
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.DEVICE_preset
+            data:
+              option: Staircase Warm
+      - alias: Rainbow - rainbow staircase
+        conditions:
+          - condition: trigger
+            id: set_rainbow
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.DEVICE_preset
+            data:
+              option: Staircase Rainbow
+      - alias: Sync dropdown - All
+        conditions:
+          - condition: trigger
+            id: is_all
+        sequence:
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.staircase_effect
+            data:
+              option: All
+      - alias: Sync dropdown - Sweep
+        conditions:
+          - condition: trigger
+            id: is_sweep
+        sequence:
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.staircase_effect
+            data:
+              option: Sweep
+      - alias: Sync dropdown - Rainbow
+        conditions:
+          - condition: trigger
+            id: is_rainbow
+        sequence:
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.staircase_effect
+            data:
+              option: Rainbow

@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" width="1100" height="720" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>Staircase controller wiring</title>
+  <defs>
+    <g id="button">
+      <rect x="-20" y="-20" width="40" height="40" rx="6" fill="#455a64" stroke="#263238" stroke-width="2"/>
+      <circle r="11" fill="#cfd8dc" stroke="#263238" stroke-width="2"/>
+      <circle r="5" fill="#90a4ae"/>
+    </g>
+  </defs>
+
+  <rect width="1100" height="720" rx="16" fill="#ffffff"/>
+
+  <!-- ===== Wires (drawn first so parts sit on top) ===== -->
+  <g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 5V: PSU -> strip -->
+    <path d="M220 80 H646" stroke="#d32f2f"/>
+    <!-- GND: PSU -> strip, and ESP32 left GND -> PSU GND (common ground) -->
+    <path d="M220 120 H646" stroke="#263238"/>
+    <path d="M300 300 H260 V120" stroke="#263238"/>
+    <!-- Data: GPIO 2 -> 330 ohm -> strip DIN -->
+    <path d="M520 280 H610 V155 H646" stroke="#2e7d32"/>
+    <!-- GPIO 18 -> top button node -> 10k -> GND -->
+    <path d="M520 350 H1020" stroke="#1565c0"/>
+    <!-- 3.3V rail -> both buttons -->
+    <path d="M520 430 H880 V470" stroke="#ef6c00"/>
+    <path d="M740 350 V390" stroke="#1565c0"/>
+    <path d="M740 390 V430" stroke="#ef6c00"/>
+    <!-- GPIO 19 -> bottom button node -> 10k -> GND -->
+    <path d="M520 510 H880 V470" stroke="#8e24aa"/>
+    <path d="M880 510 V620" stroke="#8e24aa"/>
+    <!-- GND: ESP32 right GND -> pull-down rail -->
+    <path d="M520 570 H560 V620 H1020 V350" stroke="#263238"/>
+  </g>
+  <!-- segment of the top-button pull-down that lands on GND, recoloured -->
+  <path d="M930 350 H1020" fill="none" stroke="#263238" stroke-width="5" stroke-linecap="round"/>
+  <path d="M880 600 V620" fill="none" stroke="#263238" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- junction dots -->
+  <g fill="#263238">
+    <circle cx="260" cy="120" r="7"/>
+    <circle cx="880" cy="620" r="7"/>
+  </g>
+  <circle cx="740" cy="350" r="7" fill="#1565c0"/>
+  <circle cx="740" cy="430" r="7" fill="#ef6c00"/>
+  <circle cx="880" cy="510" r="7" fill="#8e24aa"/>
+
+  <!-- ===== Power supply ===== -->
+  <rect x="40" y="40" width="180" height="110" rx="10" fill="#eceff1" stroke="#90a4ae" stroke-width="2"/>
+  <text x="130" y="88" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">5 V power supply</text>
+  <text x="130" y="110" text-anchor="middle" font-size="13" fill="#546e7a">for the LEDs</text>
+  <circle cx="220" cy="80" r="7" fill="#d32f2f" stroke="#fff" stroke-width="2"/>
+  <circle cx="220" cy="120" r="7" fill="#263238" stroke="#fff" stroke-width="2"/>
+  <text x="232" y="72" font-size="13" font-weight="700" fill="#d32f2f">+5V</text>
+  <text x="232" y="112" font-size="13" font-weight="700" fill="#263238">GND</text>
+
+  <text x="250" y="210" text-anchor="end" font-size="13" font-weight="700" fill="#263238">Common ground</text>
+  <text x="250" y="227" text-anchor="end" font-size="12" fill="#546e7a">ESP32 GND joins</text>
+  <text x="250" y="242" text-anchor="end" font-size="12" fill="#546e7a">the PSU GND</text>
+
+  <!-- ===== LED strip ===== -->
+  <text x="850" y="40" text-anchor="middle" font-size="15" font-weight="700" fill="#263238">WS2812B LED strip (start of the bottom stair)</text>
+  <rect x="640" y="60" width="420" height="110" rx="8" fill="#fafafa" stroke="#bdbdbd" stroke-width="2"/>
+  <g fill="#c9a227">
+    <rect x="640" y="72" width="30" height="16" rx="3"/>
+    <rect x="640" y="112" width="30" height="16" rx="3"/>
+    <rect x="640" y="147" width="30" height="16" rx="3"/>
+  </g>
+  <text x="676" y="85" font-size="13" font-weight="700" fill="#d32f2f">+5V</text>
+  <text x="676" y="125" font-size="13" font-weight="700" fill="#263238">GND</text>
+  <text x="676" y="160" font-size="13" font-weight="700" fill="#2e7d32">DIN</text>
+  <g>
+    <rect x="735" y="98" width="34" height="34" rx="4" fill="#eeeeee" stroke="#9e9e9e"/><circle cx="752" cy="115" r="9" fill="#ffd54f"/>
+    <rect x="800" y="98" width="34" height="34" rx="4" fill="#eeeeee" stroke="#9e9e9e"/><circle cx="817" cy="115" r="9" fill="#ffd54f"/>
+    <rect x="865" y="98" width="34" height="34" rx="4" fill="#eeeeee" stroke="#9e9e9e"/><circle cx="882" cy="115" r="9" fill="#ffd54f"/>
+    <rect x="930" y="98" width="34" height="34" rx="4" fill="#eeeeee" stroke="#9e9e9e"/><circle cx="947" cy="115" r="9" fill="#ffd54f"/>
+    <rect x="995" y="98" width="34" height="34" rx="4" fill="#eeeeee" stroke="#9e9e9e"/><circle cx="1012" cy="115" r="9" fill="#ffd54f"/>
+  </g>
+  <text x="1050" y="192" text-anchor="end" font-size="13" fill="#546e7a">data flows this way →</text>
+
+  <!-- ===== Data resistor 330 ohm ===== -->
+  <g transform="translate(570 280)">
+    <rect x="-28" y="-10" width="56" height="20" rx="9" fill="#e8d3a8" stroke="#8d6e63" stroke-width="1.5"/>
+    <rect x="-18" y="-10" width="5" height="20" fill="#ef6c00"/>
+    <rect x="-9" y="-10" width="5" height="20" fill="#ef6c00"/>
+    <rect x="0" y="-10" width="5" height="20" fill="#6d4c41"/>
+    <rect x="14" y="-10" width="5" height="20" fill="#c9a227"/>
+  </g>
+  <text x="570" y="262" text-anchor="middle" font-size="14" font-weight="700" fill="#2e7d32">330 Ω</text>
+
+  <!-- ===== ESP32 board ===== -->
+  <rect x="300" y="235" width="220" height="365" rx="12" fill="#1e3a5f" stroke="#0d2238" stroke-width="2"/>
+  <rect x="345" y="255" width="110" height="130" rx="6" fill="#b0bec5" stroke="#78909c" stroke-width="2"/>
+  <text x="400" y="315" text-anchor="middle" font-size="16" font-weight="700" fill="#263238">ESP32</text>
+  <text x="400" y="335" text-anchor="middle" font-size="12" fill="#37474f">WROOM-32</text>
+  <text x="400" y="420" text-anchor="middle" font-size="13" fill="#cfd8dc">Wemos D1 Mini</text>
+  <text x="400" y="437" text-anchor="middle" font-size="13" fill="#cfd8dc">ESP32</text>
+  <!-- pins -->
+  <g fill="#c9a227" stroke="#fff" stroke-width="1.5">
+    <circle cx="300" cy="300" r="6"/>
+    <circle cx="520" cy="280" r="6"/>
+    <circle cx="520" cy="350" r="6"/>
+    <circle cx="520" cy="430" r="6"/>
+    <circle cx="520" cy="510" r="6"/>
+    <circle cx="520" cy="570" r="6"/>
+  </g>
+  <g font-size="13" font-weight="700" fill="#ffffff">
+    <text x="312" y="305">GND</text>
+    <text x="508" y="285" text-anchor="end">GPIO 2</text>
+    <text x="508" y="355" text-anchor="end">GPIO 18</text>
+    <text x="508" y="435" text-anchor="end">3V3</text>
+    <text x="508" y="515" text-anchor="end">GPIO 19</text>
+    <text x="508" y="575" text-anchor="end">GND</text>
+  </g>
+  <!-- USB -->
+  <rect x="385" y="592" width="30" height="20" rx="3" fill="#9e9e9e" stroke="#616161"/>
+  <text x="400" y="632" text-anchor="middle" font-size="12" fill="#546e7a">USB to computer</text>
+  <text x="400" y="647" text-anchor="middle" font-size="12" fill="#546e7a">(flashing and testing)</text>
+
+  <!-- ===== Top button (GPIO 18) ===== -->
+  <use href="#button" x="740" y="390"/>
+  <text x="768" y="386" font-size="14" font-weight="700" fill="#1565c0">TOP</text>
+  <text x="768" y="403" font-size="12" fill="#546e7a">button</text>
+
+  <!-- pull-down for top: horizontal 10k -->
+  <g transform="translate(900 350)">
+    <rect x="-30" y="-10" width="60" height="20" rx="9" fill="#e8d3a8" stroke="#8d6e63" stroke-width="1.5"/>
+    <rect x="-19" y="-10" width="5" height="20" fill="#6d4c41"/>
+    <rect x="-10" y="-10" width="5" height="20" fill="#212121"/>
+    <rect x="-1" y="-10" width="5" height="20" fill="#ef6c00"/>
+    <rect x="14" y="-10" width="5" height="20" fill="#c9a227"/>
+  </g>
+  <text x="900" y="330" text-anchor="middle" font-size="13" font-weight="700" fill="#263238">10 kΩ pull-down</text>
+
+  <!-- ===== Bottom button (GPIO 19) ===== -->
+  <use href="#button" x="880" y="470"/>
+  <text x="908" y="466" font-size="14" font-weight="700" fill="#8e24aa">BOTTOM</text>
+  <text x="908" y="483" font-size="12" fill="#546e7a">button</text>
+
+  <!-- pull-down for bottom: vertical 10k -->
+  <g transform="translate(880 568) rotate(90)">
+    <rect x="-30" y="-10" width="60" height="20" rx="9" fill="#e8d3a8" stroke="#8d6e63" stroke-width="1.5"/>
+    <rect x="-19" y="-10" width="5" height="20" fill="#6d4c41"/>
+    <rect x="-10" y="-10" width="5" height="20" fill="#212121"/>
+    <rect x="-1" y="-10" width="5" height="20" fill="#ef6c00"/>
+    <rect x="14" y="-10" width="5" height="20" fill="#c9a227"/>
+  </g>
+  <text x="900" y="565" font-size="13" font-weight="700" fill="#263238">10 kΩ</text>
+  <text x="900" y="581" font-size="13" font-weight="700" fill="#263238">pull-down</text>
+
+  <text x="1030" y="640" text-anchor="end" font-size="12" fill="#546e7a">GND</text>
+
+  <!-- ===== Legend ===== -->
+  <g font-size="13" fill="#263238" stroke-width="5" stroke-linecap="round">
+    <line x1="40" y1="690" x2="70" y2="690" stroke="#d32f2f"/><text x="78" y="695" stroke="none">5 V</text>
+    <line x1="130" y1="690" x2="160" y2="690" stroke="#263238"/><text x="168" y="695" stroke="none">Ground</text>
+    <line x1="245" y1="690" x2="275" y2="690" stroke="#2e7d32"/><text x="283" y="695" stroke="none">LED data</text>
+    <line x1="370" y1="690" x2="400" y2="690" stroke="#ef6c00"/><text x="408" y="695" stroke="none">3.3 V</text>
+    <line x1="465" y1="690" x2="495" y2="690" stroke="#1565c0"/><text x="503" y="695" stroke="none">Top trigger</text>
+    <line x1="600" y1="690" x2="630" y2="690" stroke="#8e24aa"/><text x="638" y="695" stroke="none">Bottom trigger</text>
+  </g>
+  <text x="1060" y="695" text-anchor="end" font-size="12" fill="#546e7a">Pressing a button connects its GPIO to 3.3 V</text>
+</svg>

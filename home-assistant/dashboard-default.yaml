@@ -1,0 +1,41 @@
+# Dashboard card - built-in cards only (no HACS or Bubble Card needed).
+# Edit dashboard -> Add card -> Manual -> paste.
+# Same controls as the Bubble Card version: light status, Bottom / Top sweep, effect dropdown.
+type: vertical-stack
+cards:
+  - type: tile
+    entity: light.DEVICE_main
+    name: Staircase
+    icon: mdi:stairs
+    tap_action:
+      action: more-info
+  - type: horizontal-stack
+    cards:
+      - type: button
+        name: Bottom
+        icon: mdi:stairs-up
+        show_state: false
+        tap_action:
+          action: perform-action
+          perform_action: select.select_option
+          target:
+            entity_id: select.DEVICE_preset
+          data:
+            option: zz Trigger Bottom
+      - type: button
+        name: Top
+        icon: mdi:stairs-down
+        show_state: false
+        tap_action:
+          action: perform-action
+          perform_action: select.select_option
+          target:
+            entity_id: select.DEVICE_preset
+          data:
+            option: zz Trigger Top
+  - type: tile
+    entity: input_select.staircase_effect
+    name: Effect
+    icon: mdi:palette
+    features:
+      - type: select-options

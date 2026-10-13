@@ -1,0 +1,12 @@
+# Helper: the effect dropdown (All / Sweep / Rainbow).
+# Easiest way: Settings -> Devices & services -> Helpers -> Create helper -> Dropdown,
+#   Name "Staircase Effect", icon mdi:stairs, options All, Sweep, Rainbow.
+# Or paste this into configuration.yaml if you manage helpers in YAML:
+input_select:
+  staircase_effect:
+    name: Staircase Effect
+    icon: mdi:stairs
+    options:
+      - All
+      - Sweep
+      - Rainbow

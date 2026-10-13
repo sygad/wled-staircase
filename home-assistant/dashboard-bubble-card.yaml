@@ -1,0 +1,64 @@
+# Dashboard card - Bubble Card version (needs Bubble Card v3.x from HACS; built on v3.4.1).
+# Edit dashboard -> Add card -> Manual -> paste.
+# Tap the card for the light's details. Sub-buttons: Bottom / Top sweep, effect dropdown.
+type: custom:bubble-card
+card_type: button
+button_type: state
+entity: light.DEVICE_main
+name: Staircase
+icon: mdi:stairs
+show_state: true
+tap_action:
+  action: more-info
+button_action:
+  tap_action:
+    action: more-info
+sub_button:
+  bottom:
+    - name: Bottom
+      icon: mdi:stairs-up
+      show_name: true
+      show_background: true
+      tap_action:
+        action: perform-action
+        perform_action: select.select_option
+        target:
+          entity_id: select.DEVICE_preset
+        data:
+          option: zz Trigger Bottom
+    - name: Top
+      icon: mdi:stairs-down
+      show_name: true
+      show_background: true
+      tap_action:
+        action: perform-action
+        perform_action: select.select_option
+        target:
+          entity_id: select.DEVICE_preset
+        data:
+          option: zz Trigger Top
+    - entity: input_select.staircase_effect
+      sub_button_type: select
+      icon: mdi:palette
+      show_state: true
+      show_arrow: true
+      show_background: true
+modules:
+  - home-assistant-default
+grid_options:
+  columns: 12
+  rows: 2
+styles: |
+  ha-card {
+    --bubble-sub-button-border-radius: 12px;
+    --bubble-sub-slider-border-radius: 12px;
+    --bubble-sub-slider-background-color: rgba(var(--rgb-disabled-color), 0.2);
+  }
+  .bubble-sub-button {
+    height: 42px !important;
+    border-radius: 12px !important;
+  }
+  .bubble-icon-container,
+  .bubble-name-container {
+    margin-top: 16px !important;
+  }
