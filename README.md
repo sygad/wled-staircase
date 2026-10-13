@@ -120,7 +120,7 @@ The first build takes about 10–15 minutes. Rebuilds take 1–2 minutes.
 - [Claude Code](https://claude.com/claude-code) installed
 - Your ESP32 and a **USB data cable** (some cables only charge; those won't work)
 - Your Wi-Fi name and password, ready to type into the WLED setup page yourself
-- If you want Home Assistant: its address, and access for Claude Code (e.g. a Home Assistant MCP server, or you can paste the YAML in yourself)
+- If you want Home Assistant: **Claude Code connected to Home Assistant through an MCP server.** I use [HA-MCP](https://github.com/homeassistant-ai/ha-mcp), installed from HACS. This is how Claude Code creates the helper, automation and dashboard card for you. Set it up before you start; see [docs/home-assistant.md](docs/home-assistant.md#connect-claude-code-to-home-assistant-ha-mcp)
 
 ### The prompt
 
@@ -154,9 +154,16 @@ Ask one question at a time:
    brightness limiter.
 6. Do I want Home Assistant control? Explain it's optional and that the
    physical buttons work without it.
-7. If yes: is the WLED integration set up in Home Assistant? Explain it's
+7. If yes: check that you're connected to Home Assistant through an MCP
+   server (e.g. HA-MCP): look for Home Assistant tools, or ask me to run
+   /mcp. Explain it's required for you to set up Home Assistant for me.
+   If it's not connected, point me to the HA-MCP steps in
+   docs/home-assistant.md. Explain that Claude Code has to be restarted
+   (claude --continue) before a new MCP server shows up. We can carry on
+   with the firmware in the meantime.
+8. If yes: is the WLED integration set up in Home Assistant? Explain it's
    required for the Home Assistant part.
-8. If yes: is Bubble Card installed? If not, would I like to install it?
+9. If yes: is Bubble Card installed? If not, would I like to install it?
    Explain it's optional and only changes how the dashboard looks. Without
    it I get a dashboard made from Home Assistant's built-in cards.
 
@@ -189,6 +196,8 @@ PHASE 3 - BUILD. Ask before installing each tool.
    trigger wires are swapped. If I didn't want Home Assistant, finish here
    with a short summary.
 8. Home Assistant (only if I chose it):
+   - Confirm the Home Assistant MCP connection works before changing
+     anything. If it still isn't connected, stop and help me set it up.
    - Make sure the device was named BEFORE Home Assistant discovered it.
      Home Assistant sets entity IDs from the name at discovery, and renaming
      later doesn't change them, so the automation wouldn't match.
@@ -217,6 +226,7 @@ Details: [docs/home-assistant.md](docs/home-assistant.md)
 | | |
 |---|---|
 | **Required** | The [WLED integration](https://www.home-assistant.io/integrations/wled/) (built into Home Assistant) |
+| **Required for the Claude Code setup** | Claude Code connected to Home Assistant through an MCP server, e.g. [HA-MCP](https://github.com/homeassistant-ai/ha-mcp) from HACS |
 | **Optional** | [Bubble Card](https://github.com/Clooos/Bubble-Card) v3.x via HACS, for the nicer dashboard card |
 | **Included** | Effect dropdown helper, an automation that keeps the dropdown and WLED in sync, and two dashboard cards (Bubble Card and built-in only) |
 

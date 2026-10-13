@@ -14,7 +14,29 @@ The staircase works fully from the physical buttons. Home Assistant adds:
 |---|---|---|
 | **WLED integration** | **Required** | Built into Home Assistant. Everything on this page depends on it |
 | **Bubble Card** | Optional | A custom card from HACS. Built on v3.4.1. Without it, use the built-in card version |
-| **HACS** | Only for Bubble Card | https://hacs.xyz |
+| **HA-MCP** | Required for the Claude Code setup | Lets Claude Code create the helper, automation and dashboard card. Not needed if you set Home Assistant up by hand with the steps below |
+| **HACS** | For Bubble Card and HA-MCP | https://hacs.xyz |
+
+---
+
+## Connect Claude Code to Home Assistant (HA-MCP)
+
+The [Build Your Own Version](../README.md#build-your-own-version) prompt sets up Home Assistant for you. To do that, Claude Code needs a connection to your Home Assistant through an **MCP server**. I use **[HA-MCP](https://github.com/homeassistant-ai/ha-mcp)**, installed from HACS.
+
+Set this up **before** you paste the prompt. Claude Code only picks up a new MCP server when it starts.
+
+1. **Install it:** **HACS → search "HA-MCP" → Download**, then restart Home Assistant.
+2. **Add the integration:** **Settings → Devices & services → Add integration → HA-MCP Server**.
+3. **Copy the connect URL:** open the integration's **Configure** screen and copy the URL. No access token is needed.
+4. **Add it to Claude Code** (paste your URL):
+   ```bash
+   claude mcp add --transport http home-assistant <your-connect-URL>
+   ```
+5. **Check it:** start Claude Code, run `/mcp`, and make sure **home-assistant** shows as connected.
+
+HA-MCP can also run as a Home Assistant add-on, in Docker, or with `uvx`. Its [Setup Wizard](https://github.com/homeassistant-ai/ha-mcp) shows the steps for each. Only add one connection to the same Home Assistant. Two entries for the same server can make the connection hang.
+
+> Without an MCP connection, you can still do everything on this page by hand. Claude Code just can't do it for you.
 
 ---
 
