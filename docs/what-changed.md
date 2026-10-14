@@ -86,7 +86,7 @@ Things that took a while to work out:
 ## Gotchas
 
 1. **Pull-down resistors are required** on both trigger pins. The usermod treats HIGH as "pressed", so a floating pin reads as pressed all the time.
-2. **Don't re-save presets 1–3 from the WLED web UI.** The UI drops the `staircase` setting and changes which segments are selected. Edit presets through the JSON API, or regenerate them with `tools/make_wled_config.py`.
+2. **Don't re-save presets 1–3 from the WLED web UI.** The UI drops the `staircase` setting and changes which segments are selected. Edit presets through the JSON API, or regenerate them with `tools/make_wled_config.py`. What's safe to change in the UI is listed in [using-wled-standalone.md](using-wled-standalone.md).
 3. **Switch to preset 1 before saving any WLED Config page.** WLED 16 saves the usermod's *current* enabled state with the config.
 4. **API triggers only work while the physical pins read LOW**, i.e. not pressed and pulled down properly.
 5. **Set the brightness limiter** (LED Preferences → max current) to about 85% of your LED power supply's rating. The WLED default is 4000 mA.

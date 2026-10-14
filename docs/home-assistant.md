@@ -6,6 +6,8 @@ The staircase works fully from the physical buttons. Home Assistant adds:
 - **Bottom** and **Top** buttons that run a sweep from your phone
 - an **effect dropdown**: Sweep, Rainbow or All
 
+All of this can also be done from WLED's own web page or app. See [using-wled-standalone.md](using-wled-standalone.md).
+
 ---
 
 ## Requirements
