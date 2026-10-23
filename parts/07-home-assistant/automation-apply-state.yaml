@@ -1,0 +1,83 @@
+# Staircase v2 · Automation 3 of 3 – Apply state (the only thing that chooses a preset)
+# Explained in: parts/07-home-assistant/README.md
+# Paste into: Settings → Automations → ⋮ → Edit in YAML (new empty automation)
+# Needs: the three helpers in helpers.yaml, the WLED integration, input_boolean.motion_sensors
+# Search this file for CHANGE and swap in your own entity IDs.
+
+alias: Staircase v2 – Apply state
+description: Puts WLED Staircase v2 into the right preset whenever Power, Moon, mode, motion sensors or day/night change, when HA starts, and when the controller comes back online.
+triggers:
+- trigger: state
+  entity_id:
+  - input_boolean.stairs_s3_power
+  - input_boolean.stairs_s3_moon
+  - input_boolean.motion_sensors  # CHANGE: your own master motion toggle, or delete this line
+  to:
+  - 'on'
+  - 'off'
+- trigger: state
+  entity_id: input_select.stairs_s3_mode
+  to:
+  - Sweep
+  - All
+  - Rainbow
+  - Matrix
+  - Disco
+- trigger: state
+  entity_id: sun.sun
+  to:
+  - above_horizon
+  - below_horizon
+- trigger: state
+  entity_id: light.wled_staircase  # CHANGE: your own entity
+  from: unavailable
+- trigger: homeassistant
+  event: start
+conditions: []
+actions:
+- choose:
+  - alias: 'Power off: everything off, mode back to Sweep'
+    conditions:
+    - condition: state
+      entity_id: input_boolean.stairs_s3_power
+      state: 'off'
+    sequence:
+    - action: select.select_option
+      target:
+        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      data:
+        option: Stairs Off
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.stairs_s3_mode
+      data:
+        option: Sweep
+  - alias: 'Outside the active window: off'
+    conditions:
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: input_boolean.motion_sensors  # CHANGE: your own master motion toggle, or delete this line
+        state: 'off'
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: sun.sun
+          state: above_horizon
+        - condition: state
+          entity_id: input_boolean.stairs_s3_moon
+          state: 'off'
+    sequence:
+    - action: select.select_option
+      target:
+        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      data:
+        option: Stairs Off
+  default:
+  - alias: 'Active: apply the selected mode''s preset'
+    action: select.select_option
+    target:
+      entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+    data:
+      option: Stairs {{ states('input_select.stairs_s3_mode') }}
+mode: restart

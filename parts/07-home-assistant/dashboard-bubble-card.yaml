@@ -1,0 +1,88 @@
+# Staircase v2 · The Bubble Card control: Power, Moon, Top, Bottom and the mode dropdown
+# Explained in: parts/07-home-assistant/README.md
+# Paste into: a dashboard section → ⋮ → Edit in YAML (add card → Manual)
+# Needs: Bubble Card v3.x from HACS
+# Search this file for CHANGE and swap in your own entity IDs.
+
+type: custom:bubble-card
+card_type: button
+button_type: name
+name: Staircase v2
+icon: mdi:stairs
+tap_action:
+  action: none
+double_tap_action:
+  action: none
+hold_action:
+  action: none
+button_action:
+  tap_action:
+    action: none
+  double_tap_action:
+    action: none
+  hold_action:
+    action: none
+sub_button:
+  main:
+  - entity: input_boolean.stairs_s3_moon
+    name: Moon
+    icon: mdi:weather-night
+    show_background: true
+    state_background: true
+    tap_action:
+      action: toggle
+  - entity: input_boolean.stairs_s3_power
+    name: Power
+    icon: mdi:power
+    show_background: true
+    state_background: true
+    tap_action:
+      action: toggle
+  bottom:
+  - name: Top
+    icon: mdi:stairs-down
+    show_name: true
+    show_background: true
+    tap_action:
+      action: perform-action
+      perform_action: select.select_option
+      target:
+        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      data:
+        option: zz Trigger Top
+  - name: Bottom
+    icon: mdi:stairs-up
+    show_name: true
+    show_background: true
+    tap_action:
+      action: perform-action
+      perform_action: select.select_option
+      target:
+        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      data:
+        option: zz Trigger Bottom
+  - entity: input_select.stairs_s3_mode
+    sub_button_type: select
+    icon: mdi:palette
+    show_state: true
+    show_arrow: true
+    show_background: true
+modules:
+- home-assistant-default
+grid_options:
+  columns: 12
+  rows: 2
+styles: |
+  ha-card {
+    --bubble-sub-button-border-radius: 12px;
+    --bubble-sub-slider-border-radius: 12px;
+    --bubble-sub-slider-background-color: rgba(var(--rgb-disabled-color), 0.2);
+  }
+  .bubble-sub-button {
+    height: 42px !important;
+    border-radius: 12px !important;
+  }
+  .bubble-icon-container,
+  .bubble-name-container {
+    margin-top: 16px !important;
+  }

@@ -1,0 +1,23 @@
+# Staircase v2 · The three helpers (created in the UI, shown here as YAML)
+# Explained in: parts/07-home-assistant/README.md
+# Paste into: Settings → Devices & services → Helpers (or configuration.yaml)
+# Needs: nothing
+# Search this file for CHANGE and swap in your own entity IDs.
+
+input_boolean:
+  stairs_s3_power:
+    name: Staircase v2 Power
+    icon: mdi:power
+  stairs_s3_moon:
+    name: Staircase v2 Moon
+    icon: mdi:weather-night
+input_select:
+  stairs_s3_mode:
+    name: Staircase v2 Mode
+    icon: mdi:stairs
+    options:
+    - Sweep
+    - All
+    - Rainbow
+    - Matrix
+    - Disco

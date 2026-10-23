@@ -1,0 +1,227 @@
+diff --git a/usermods/Animated_Staircase/Animated_Staircase.cpp b/usermods/Animated_Staircase/Animated_Staircase.cpp
+index 2d2d27c..e1b2bf3 100644
+--- a/usermods/Animated_Staircase/Animated_Staircase.cpp
++++ b/usermods/Animated_Staircase/Animated_Staircase.cpp
+@@ -9,6 +9,12 @@
+  */
+ #include "wled.h"
+ 
++// STAIRCASE_V2 (set in the esp32s3_staircase build only) adds:
++//  P3 on-time counts from the end of the on-sweep
++//  P4 active-low trigger inputs (INPUT_PULLUP, LOW = triggered)
++//  P5 while on, the opposite sensor is ignored
++//  P6 enable/disable from presets never toggles master power and never plays an off-sweep
++
+ class Animated_Staircase : public Usermod {
+   private:
+ 
+@@ -56,6 +62,9 @@ class Animated_Staircase : public Usermod {
+     // Last time the lights were switched on or off
+     unsigned long lastSwitchTime = 0;
+ 
++    // Last time a step (segment on/off) happened
++    unsigned long lastStepTime = 0;
++
+     // segment id between onIndex and offIndex are on.
+     // controll the swipe by setting/moving these indices around.
+     // onIndex must be less than or equal to offIndex
+@@ -120,8 +129,16 @@ class Animated_Staircase : public Usermod {
+         //seg.setOption(SEG_OPTION_TRANSITIONAL, true); // not needed anymore as setOption() does it
+       }
+       strip.trigger();  // force strip refresh
++#ifdef STAIRCASE_V2
++      // Inform UI/HA only when master power changes. Every stateUpdated() with a change pushes the full
++      // 64-segment state (loop stall = stutter) and restarts the fade of every segment (rows still fading
++      // in flash twice). stateUpdated(), not colorUpdated(): colorUpdated() would copy stale global
++      // fx/colour onto the selected segment
++      if (bri != briOld) stateUpdated(CALL_MODE_DIRECT_CHANGE);
++#else
+       stateChanged = true;  // inform external devices/UI of change
+       colorUpdated(CALL_MODE_DIRECT_CHANGE);
++#endif
+     }
+ 
+     /*
+@@ -156,6 +173,18 @@ class Animated_Staircase : public Usermod {
+       return pulseIn(echoPin, HIGH, maxTimeUs) > 0;
+     }
+ 
++    // P4: buttons pull the pin to GND when pressed
++    bool triggerPinRead(int8_t pin) {
++      if (pin < 0) return false;
++#ifdef STAIRCASE_V2
++      return digitalRead(pin) == LOW;
++#else
++      return digitalRead(pin);
++#endif
++    }
++
++    bool fullyOn() { return onIndex == minSegmentId && offIndex == maxSegmentId; }
++
+     bool checkSensors() {
+       bool sensorChanged = false;
+ 
+@@ -164,12 +193,12 @@ class Animated_Staircase : public Usermod {
+ 
+         bottomSensorRead = bottomSensorWrite ||
+           (!useUSSensorBottom ?
+-            (bottomPIRorTriggerPin<0 ? false : digitalRead(bottomPIRorTriggerPin)) :
++            triggerPinRead(bottomPIRorTriggerPin) :
+             ultrasoundRead(bottomPIRorTriggerPin, bottomEchoPin, bottomMaxDist*59)  // cm to us
+           );
+         topSensorRead = topSensorWrite ||
+           (!useUSSensorTop ?
+-            (topPIRorTriggerPin<0 ? false : digitalRead(topPIRorTriggerPin)) :
++            triggerPinRead(topPIRorTriggerPin) :
+             ultrasoundRead(topPIRorTriggerPin, topEchoPin, topMaxDist*59)   // cm to us
+           );
+ 
+@@ -191,12 +220,17 @@ class Animated_Staircase : public Usermod {
+         topSensorWrite = false;
+         bottomSensorWrite = false;
+ 
++#ifdef STAIRCASE_V2
++        // P5: while on, only the sensor that started it counts (it restarts the on-timer)
++        if (topSensorRead != bottomSensorRead && on && bottomSensorRead != lastSensor) return sensorChanged;
++#endif
+         if (topSensorRead != bottomSensorRead) {
+           lastSwitchTime = millis();
+ 
+-          if (on) {
+-            lastSensor = topSensorRead;
+-          } else {
++          // Remember the direction of the latest trigger so the OFF swipe follows the ON swipe
++          // (bottom trigger: on and off both run bottom -> top; top trigger: both run top -> bottom)
++          lastSensor = bottomSensorRead;
++          if (!on) {
+             if (togglePower && onIndex == offIndex && offMode) toggleOnOff(); // toggle power on if off
+             // If the bottom sensor triggered, we need to swipe up, ON
+             swipe = bottomSensorRead;
+@@ -213,6 +247,9 @@ class Animated_Staircase : public Usermod {
+               }
+               offIndex = onIndex;
+             }
++#ifdef STAIRCASE_V2
++            strip.setTransition(segment_delay_ms); // each step fades in/out over one step
++#endif
+             on = true;
+           }
+         }
+@@ -221,6 +258,9 @@ class Animated_Staircase : public Usermod {
+     }
+ 
+     void autoPowerOff() {
++#ifdef STAIRCASE_V2
++      if (!fullyOn()) return; // P3: the on-time only starts once the on-sweep has finished
++#endif
+       if ((millis() - lastSwitchTime) > on_time_ms) {
+         // if sensors are still on, do nothing
+         if (bottomSensorState || topSensorState) return;
+@@ -236,7 +276,12 @@ class Animated_Staircase : public Usermod {
+ 
+     void updateSwipe() {
+       if ((millis() - lastTime) > segment_delay_ms) {
++#ifdef STAIRCASE_V2
++        // keep a steady step rate: loop latency would otherwise add ~70 ms to every step
++        lastTime = (millis() - lastTime > 2 * segment_delay_ms) ? millis() : lastTime + segment_delay_ms;
++#else
+         lastTime = millis();
++#endif
+ 
+         byte oldOn  = onIndex;
+         byte oldOff = offIndex;
+@@ -252,10 +297,25 @@ class Animated_Staircase : public Usermod {
+           }
+         }
+         if (oldOn != onIndex || oldOff != offIndex) {
++#ifdef STAIRCASE_V2
++          if (on && fullyOn()) lastSwitchTime = millis(); // P3: start the on-time now
++#endif
+           updateSegments(); // reduce the number of updates to necessary ones
++#ifdef STAIRCASE_V2
++          lastStepTime = millis();
++#else
+           if (togglePower && onIndex == offIndex && !offMode && !on) toggleOnOff();  // toggle power off for all segments off
++#endif
+         }
+       }
++#ifdef STAIRCASE_V2
++      // Power off only once the last row has finished fading out: the power change restarts every
++      // segment's fade, which made the last rows of the off-sweep flash twice
++      if (togglePower && onIndex == offIndex && !offMode && !on && bri && millis() - lastStepTime > 2 * segment_delay_ms) {
++        toggleOnOff();
++        stateUpdated(CALL_MODE_DIRECT_CHANGE); // apply and report the power-off
++      }
++#endif
+     }
+ 
+     // send sensor values to JSON API
+@@ -297,9 +357,29 @@ class Animated_Staircase : public Usermod {
+ 
+         // shorten the strip transition time to be equal or shorter than segment delay
+         transitionDelay = segment_delay_ms;
++#ifdef STAIRCASE_V2
++        // P6: start in standby (all steps dark, nothing to sweep off); master power is left to the preset.
++        // The active transition and the state update are left to the preset as well (presets switch
++        // instantly with "tt":0); the step fade is set when a sweep starts.
++        on = false;
++        offIndex = onIndex;
++        for (int i = minSegmentId; i < maxSegmentId; i++) {
++          Segment &seg = strip.getSegment(i);
++          if (seg.isActive()) seg.setOption(SEG_OPTION_ON, false);
++        }
++        strip.trigger();
++        stateChanged = true;
++#else
+         strip.setTransition(segment_delay_ms);
+         strip.trigger();
++#endif
+       } else {
++#ifdef STAIRCASE_V2
++        // P6: master power, segment on/off and the state update are all left to the preset, so a
++        // preset change shows only the new preset (Matrix/Disco/Danger define their own lit segment)
++        on = false;
++        offIndex = onIndex;
++#else
+         if (togglePower && !on && offMode) toggleOnOff(); // toggle power on if off
+         // Restore segment options
+         for (int i = 0; i <= strip.getLastActiveSegmentId(); i++) {
+@@ -310,6 +390,7 @@ class Animated_Staircase : public Usermod {
+         strip.trigger();  // force strip update
+         stateChanged = true;  // inform external devices/UI of change
+         colorUpdated(CALL_MODE_DIRECT_CHANGE);
++#endif
+         DEBUG_PRINTLN(F("Animated Staircase disabled."));
+       }
+       enabled = enable;
+@@ -413,11 +494,21 @@ class Animated_Staircase : public Usermod {
+       if (!staircase.isNull()) {
+         if (staircase[FPSTR(_enabled)].is<bool>()) {
+           en = staircase[FPSTR(_enabled)].as<bool>();
++#ifdef STAIRCASE_V2
++        } else if (staircase[FPSTR(_enabled)].isNull()) {
++          // P6: a trigger-only call ({"staircase":{"bottom-sensor":true}}) must not enable the usermod
++#endif
+         } else {
+           String str = staircase[FPSTR(_enabled)]; // checkbox -> off or on
+           en = (bool)(str!="off"); // off is guaranteed to be present
+         }
++#ifdef STAIRCASE_V2
++        // P6: a preset that sets enabled:true always returns to a clean standby (new segment layout, no stray steps)
++        if (en != enabled || (en && staircase[FPSTR(_enabled)].is<bool>())) enable(en);
++        if (!enabled) return; // triggers do nothing while disabled
++#else
+         if (en != enabled) enable(en);
++#endif
+         readSensorsFromJson(staircase);
+         DEBUG_PRINTLN(F("Staircase sensor state read from API."));
+       }
+@@ -480,7 +571,7 @@ class Animated_Staircase : public Usermod {
+       segment_delay_ms = (unsigned long) min((unsigned long)10000,max((unsigned long)10,(unsigned long)segment_delay_ms));  // max delay 10s
+ 
+       on_time_ms = top[FPSTR(_onTime)] | on_time_ms/1000;
+-      on_time_ms = min(900,max(10,(int)on_time_ms)) * 1000; // min 10s, max 15min
++      on_time_ms = min(900,max(1,(int)on_time_ms)) * 1000; // min 1s, max 15min
+ 
+       useUSSensorTop     = top[FPSTR(_useTopUltrasoundSensor)] | useUSSensorTop;
+       topPIRorTriggerPin = top[FPSTR(_topPIRorTrigger_pin)] | topPIRorTriggerPin;

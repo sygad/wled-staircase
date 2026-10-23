@@ -1,0 +1,60 @@
+# Staircase v2 · The same controls with built-in cards only (no HACS)
+# Explained in: parts/07-home-assistant/README.md
+# Paste into: a dashboard section, as five separate manual cards
+# Needs: nothing beyond Home Assistant itself
+# Search this file for CHANGE and swap in your own entity IDs.
+
+- type: tile
+  entity: input_boolean.stairs_s3_moon
+  name: Moon
+  icon: mdi:weather-night
+  tap_action:
+    action: toggle
+  grid_options:
+    columns: 6
+- type: tile
+  entity: input_boolean.stairs_s3_power
+  name: Power
+  icon: mdi:power
+  tap_action:
+    action: toggle
+  grid_options:
+    columns: 6
+- type: button
+  name: Top
+  icon: mdi:stairs-down
+  show_state: false
+  tap_action:
+    action: perform-action
+    perform_action: select.select_option
+    target:
+      entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+    data:
+      option: zz Trigger Top
+  grid_options:
+    columns: 6
+    rows: 1
+- type: button
+  name: Bottom
+  icon: mdi:stairs-up
+  show_state: false
+  tap_action:
+    action: perform-action
+    perform_action: select.select_option
+    target:
+      entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+    data:
+      option: zz Trigger Bottom
+  grid_options:
+    columns: 6
+    rows: 1
+- type: tile
+  entity: input_select.stairs_s3_mode
+  name: Mode
+  tap_action:
+    action: none
+  features:
+  - type: select-options
+  features_position: bottom
+  grid_options:
+    columns: 12

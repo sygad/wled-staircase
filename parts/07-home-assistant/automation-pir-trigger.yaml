@@ -1,0 +1,65 @@
+# Staircase v2 · Automation 1 of 3 – PIR trigger (starts a sweep)
+# Explained in: parts/07-home-assistant/README.md
+# Paste into: Settings → Automations → ⋮ → Edit in YAML (new empty automation)
+# Needs: two occupancy sensors, the three helpers, the WLED integration
+# Search this file for CHANGE and swap in your own entity IDs.
+
+alias: Staircase v2 – PIR trigger
+description: Bottom or top staircase PIR starts a sweep on WLED Staircase v2 (Sweep, All and Rainbow only). A top PIR while armed home is left to the Danger automation.
+triggers:
+- trigger: occupancy.detected
+  target:
+    entity_id: binary_sensor.staircase_bottom_pir_occupancy  # CHANGE: your own entity
+  id: bottom
+- trigger: occupancy.detected
+  target:
+    entity_id: binary_sensor.staircase_top_pir_occupancy  # CHANGE: your own entity
+  id: top
+conditions:
+- condition: state
+  entity_id: input_boolean.stairs_s3_power
+  state: 'on'
+- condition: state
+  entity_id: input_boolean.motion_sensors  # CHANGE: your own master motion toggle, or delete this line
+  state: 'on'
+- condition: or
+  conditions:
+  - condition: state
+    entity_id: sun.sun
+    state: below_horizon
+  - condition: state
+    entity_id: input_boolean.stairs_s3_moon
+    state: 'on'
+- condition: state
+  entity_id: input_select.stairs_s3_mode
+  state:
+  - Sweep
+  - All
+  - Rainbow
+actions:
+- choose:
+  - conditions:
+    - condition: trigger
+      id: bottom
+    sequence:
+    - action: select.select_option
+      target:
+        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      data:
+        option: zz Trigger Bottom
+  - conditions:
+    - condition: trigger
+      id: top
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm  # CHANGE: your own entity
+        state: armed_home
+    sequence:
+    - action: select.select_option
+      target:
+        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      data:
+        option: zz Trigger Top
+mode: queued
+max: 4

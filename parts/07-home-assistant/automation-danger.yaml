@@ -1,0 +1,46 @@
+# Staircase v2 · Automation 2 of 3 – Danger (red flash while armed home)
+# Explained in: parts/07-home-assistant/README.md
+# Paste into: Settings → Automations → ⋮ → Edit in YAML (new empty automation)
+# Needs: the top occupancy sensor, an alarm_control_panel, automation.staircase_v2_apply_state
+# Search this file for CHANGE and swap in your own entity IDs.
+
+alias: Staircase v2 – Danger
+description: 'Top staircase PIR while the alarm is armed home: WLED Staircase v2 goes red for 5 s, then back to the current mode. Visual only, no notifications.'
+triggers:
+- trigger: occupancy.detected
+  target:
+    entity_id: binary_sensor.staircase_top_pir_occupancy  # CHANGE: your own entity
+conditions:
+- condition: state
+  entity_id: alarm_control_panel.home_alarm  # CHANGE: your own entity
+  state: armed_home
+- condition: state
+  entity_id: input_boolean.stairs_s3_power
+  state: 'on'
+- condition: state
+  entity_id: input_boolean.motion_sensors  # CHANGE: your own master motion toggle, or delete this line
+  state: 'on'
+- condition: or
+  conditions:
+  - condition: state
+    entity_id: sun.sun
+    state: below_horizon
+  - condition: state
+    entity_id: input_boolean.stairs_s3_moon
+    state: 'on'
+actions:
+- action: select.select_option
+  target:
+    entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+  data:
+    option: Stairs Danger
+- delay:
+    seconds: 5
+- alias: Back to the previous mode
+  action: automation.trigger
+  target:
+    entity_id: automation.staircase_v2_apply_state
+  data:
+    skip_condition: true
+mode: single
+max_exceeded: silent

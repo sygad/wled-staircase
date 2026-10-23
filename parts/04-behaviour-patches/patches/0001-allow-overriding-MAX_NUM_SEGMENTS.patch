@@ -1,0 +1,21 @@
+diff --git a/wled00/FX.h b/wled00/FX.h
+index a8f6e1c..5ec53d5 100644
+--- a/wled00/FX.h
++++ b/wled00/FX.h
+@@ -88,10 +88,12 @@ extern byte realtimeMode;           // used in getMappedPixelIndex()
+   #define MAX_NUM_SEGMENTS  32
+   #define MAX_SEGMENT_DATA  (20*1024) // 20k by default (S2 is short on free RAM), limit does not apply if PSRAM is available
+ #else
+-  #ifdef BOARD_HAS_PSRAM
+-    #define MAX_NUM_SEGMENTS  64
+-  #else
+-    #define MAX_NUM_SEGMENTS  32
++  #ifndef MAX_NUM_SEGMENTS
++    #ifdef BOARD_HAS_PSRAM
++      #define MAX_NUM_SEGMENTS  64
++    #else
++      #define MAX_NUM_SEGMENTS  32
++    #endif
+   #endif
+   #define MAX_SEGMENT_DATA  (64*1024) // 64k by default, limit does not apply if PSRAM is available
+ #endif
