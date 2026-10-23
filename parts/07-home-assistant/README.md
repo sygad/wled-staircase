@@ -133,8 +133,11 @@ directly, so they work even if the automations are disabled.
    Assistant builds entity IDs from the name when it discovers the device and
    will not change them later.
 2. Settings → Devices & services → the **WLED** integration will have found it;
-   add it. In its options, turn on **Keep main light** — with the single-segment
-   presets (All, Matrix, Disco) the main light entity can otherwise disappear.
+   add it. Nothing here needs the light entities — the automations and cards only
+   ever touch the preset select — but if you plan to control the strip as a light
+   as well, turn on **Keep main light** in the integration's options: with the
+   single-segment presets (All, Matrix, Disco, Danger, Off) the main light entity
+   can otherwise go unavailable.
 3. Create the three helpers from `helpers.yaml` (Settings → Devices & services →
    Helpers, or paste the YAML into `configuration.yaml`).
 4. For each of the three automations: Settings → Automations → **Create new** →

@@ -162,8 +162,10 @@ the wrong end lights, fix the 2D settings rather than reversing the presets.
 
 ### Step 6: Home Assistant (only if they want it)
 
-1. Add the WLED device through the WLED integration. Turn on **Keep main light**
-   in its options.
+1. Add the WLED device through the WLED integration. Nothing in this project uses
+   the light entities, only the preset select; turn on **Keep main light** in the
+   integration's options only if the user wants to control the strip as a light
+   too.
 2. Create the three helpers from `parts/07-home-assistant/helpers.yaml`.
 3. Create the automations they need: always `automation-apply-state.yaml`;
    `automation-pir-trigger.yaml` only if they have occupancy sensors;
