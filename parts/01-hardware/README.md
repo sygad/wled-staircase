@@ -7,6 +7,11 @@
 What the controller is made of, and why each piece was chosen over the obvious
 cheaper option.
 
+> **This is a prototype rig, not a fitted staircase.** The two panels stand in
+> for the steps — one row of 8 LEDs per step — so the whole 64-step effect can be
+> seen at once on a bench. On real stairs the panels become one short strip per
+> step, wired as a single chain; nothing else changes.
+
 ## At a glance
 
 | | |
@@ -30,8 +35,7 @@ cheaper option.
 
 A classic ESP32 will not do this build: without PSRAM, WLED caps segments at 32,
 and it has neither the RAM nor the speed for a 512-LED 2D matrix with sound
-input. The older 33-step version on a classic ESP32 is in
-[sygad/wled-staircase-old](https://github.com/sygad/wled-staircase-old).
+input.
 
 ## Settings I chose
 
@@ -45,18 +49,21 @@ input. The older 33-step version on a classic ESP32 is in
 - **Power injection at the far end** of the chain, so the top steps aren't dim
   and yellow.
 
-## What I changed from the first version
+## Choices worth explaining
 
-1. **Classic ESP32 → ESP32-S3 with PSRAM.** 33 stairs needed 33 segments and a
-   recompile to lift the 32-segment cap; 64 needs PSRAM, which the S3 has. It
-   also unlocked the 2D effects the Matrix and Disco presets use.
-2. **Strip per stair → one chained matrix.** WLED can then address the whole
+1. **ESP32-S3 with PSRAM, not a classic ESP32.** One segment per step means the
+   segment count is the step count, and WLED only allows more than 32 segments
+   on a board with PSRAM. The S3 also has the headroom for the 2D effects the
+   Matrix and Disco presets use, and for the microphone later.
+2. **One chained matrix, not a strip per step.** WLED can then address the whole
    staircase as a 2D area when an effect wants to, and as 64 one-row segments
    when the sweep wants to. Both layouts live in presets, not in the firmware.
-3. **Pull-down resistors → internal pull-ups.** The first version wired each
-   button to 3.3 V with a 10 kΩ pull-down, and a missing resistor made the pins
-   read "pressed" forever. Buttons now go straight to ground and the firmware
-   enables the internal pull-ups, so there is nothing to forget.
+3. **Internal pull-ups, not pull-down resistors.** The usual WLED wiring puts a
+   button between the pin and 3.3 V with a 10 kΩ pull-down to ground, and a
+   missing resistor leaves the pin reading "pressed" forever. Here the buttons
+   go straight to ground and the firmware enables the ESP32's own pull-ups, so
+   there is no resistor to forget (patch P4 in
+   [Part 4](../04-behaviour-patches/README.md)).
 
 ## Add just this part
 

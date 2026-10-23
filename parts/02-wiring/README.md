@@ -48,8 +48,8 @@ so the pin idles high on the ESP32's own internal resistor and no external part
 is needed.
 
 Stock WLED does the opposite — it expects a PIR to pull the pin **high** — which
-is why the first version needed a 10 kΩ pull-down on each button, and why a
-missing one made the staircase think a button was held down forever.
+is why the usual wiring needs a 10 kΩ pull-down on each button, and why a missing
+one leaves the staircase thinking a button is held down forever.
 
 The trigger presets Home Assistant uses (`zz Trigger Bottom` / `zz Trigger Top`)
 still work either way, because they set the sensor flag in software rather than

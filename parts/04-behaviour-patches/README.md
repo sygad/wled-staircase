@@ -13,7 +13,7 @@ refinements that stop a 64-segment sweep from stuttering.
 | **Built from** | WLED's [Animated Staircase usermod](https://github.com/wled/WLED/tree/main/usermods/Animated_Staircase), EUPL-1.2 |
 | **Files in this folder** | `patches/0001-allow-overriding-MAX_NUM_SEGMENTS.patch` · `patches/0002-staircase-v2-behaviour.patch` |
 | **Applies to** | a clean WLED 16.0.1 checkout: `git apply patches/*.patch` |
-| **Gated by** | `-D STAIRCASE_V2` for P3–P6, so the same file still builds the older firmware |
+| **Gated by** | `-D STAIRCASE_V2` for P3–P6, so a build without the flag behaves exactly as stock |
 | **Proved by** | the preset-to-preset test in [Part 8](../08-testing/README.md) |
 
 ## The six patches
@@ -28,8 +28,9 @@ refinements that stop a 64-segment sweep from stuttering.
 | P6 | Presets can switch the staircase logic on and off cleanly | `STAIRCASE_V2` |
 
 P1 and P2 are improvements anyone would want, so they are unconditional. P3–P6
-change behaviour that the older 33-stair firmware depends on, so they sit behind
-the build flag.
+change behaviour that an existing setup may be relying on — the trigger polarity
+most of all — so they sit behind the build flag and leave an unflagged build
+behaving exactly as stock.
 
 ## What I changed
 

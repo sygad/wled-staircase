@@ -26,9 +26,8 @@ Any ESP32-S3 with 16 MB flash and PSRAM should take them.
 | `WLED_16.0.1_ESP32-S3_Staircase_FACTORY.bin` | **USB flashing** to address `0x0`. Bootloader, partition table, OTA data and app in one image | `1eb09719b5bb8170b7373fd8f63da450af50932f83b571c83481bc6f69a28d2a` |
 | `WLED_16.0.1_ESP32-S3_Staircase_OTA.bin` | **Updating** a board already running WLED, through Manual OTA in the web UI | `594f1131aac62986220492c9116042ff57f791f03f1764b149a7b7eaf7e45b57` |
 
-> ⚠️ Never use WLED's built-in online update on this controller. Stock firmware
-> has no staircase usermod and a lower segment limit, so the whole project stops
-> working. Update with the OTA file above instead.
+The first flash goes over USB; everything after that is a Manual OTA with the
+second file — see [Flashing it](#flashing-it-usb-first-ota-afterwards) below.
 
 ## What the build changes
 
@@ -41,9 +40,26 @@ Any ESP32-S3 with 16 MB flash and PSRAM should take them.
 | `-D ARDUINO_USB_CDC_ON_BOOT=1` | This board has only the S3's native USB, no serial chip |
 | `-D WLED_WATCHDOG_TIMEOUT=0` | Inherited from the stock S3 env |
 
-## Flashing it
+## Flashing it: USB first, OTA afterwards
 
-**Over USB, from scratch** (a bare board, or one running something else):
+The **first** flash has to go over USB — a bare board has no WLED on it to
+receive an update. Every flash after that is done over Wi-Fi, from WLED's own
+web page, and the board never needs unplugging again.
+
+> ### ⚠️ Never flash while the LED supply is connected
+>
+> Plugging USB into a board that is also fed 5 V from the LED supply puts two
+> power sources against each other, and the one that loses is usually your
+> computer's USB port.
+>
+> Before connecting USB: **take the 5 V wire off the board.** The panels stay
+> dark while you flash and set up, which is fine — everything except the LEDs
+> themselves can be tested that way. When you're finished, unplug USB *first*,
+> then reconnect the 5 V wire.
+>
+> The ground wire between the board and the supply can stay where it is.
+
+**First flash, over USB** (a bare board, or one running something else):
 
 1. Plug the board into a USB **data** cable. Check it appears:
    `ls /dev/cu.usb*` on macOS, Device Manager → Ports on Windows. The S3's native
@@ -55,8 +71,20 @@ Any ESP32-S3 with 16 MB flash and PSRAM should take them.
    `wled1234`) at `http://4.3.2.1`, then find its address on your network.
 4. Load the settings and presets: [Part 5](../05-wled-settings/README.md).
 
-**Updating a board that already runs this firmware:** WLED UI → Config →
-Security & Updates → Manual OTA → the `_OTA.bin` file.
+**Every update after that, over the air.** The board can stay on the stairs,
+powered by the LED supply, with no USB anywhere near it:
+
+1. Open the board's web page at `http://<ip>`.
+2. **Config → Security & Updates → Manual OTA**, and choose the `_OTA.bin` file
+   (not the factory one — that image has a bootloader on the front of it and
+   won't take as an OTA).
+3. The board reboots itself and comes back on its boot preset. Settings and
+   presets survive the update.
+
+> ⚠️ **Manual OTA only — never WLED's "Update" button.** The built-in online
+> update fetches a stock release, which has no staircase usermod and a lower
+> segment limit, and the whole project stops working until you reflash this
+> firmware.
 
 ## Building it yourself
 

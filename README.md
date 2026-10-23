@@ -1,17 +1,43 @@
 # WLED Staircase
 
-Stair lights that fill one step at a time when you walk in, hold, then empty the
-same way you came. An ESP32-S3 drives 64 steps as one WS2812B matrix, with six
-modes — including a red alarm flash and sound-reactive bars — and Home Assistant
-decides when the stairs are live.
+Stair lights that fill one step at a time as you walk in, hold while you're on
+the stairs, then empty the way you came.
 
-<!-- TODO: video. Replace the two lines below with:
+The sweep isn't a WLED effect — it's WLED's **Animated Staircase usermod**, which
+isn't in any stock WLED download, so the firmware has to be built. This repo
+hands you that build: an **ESP32-S3** running **WLED 16.0.1** with the usermod
+and **six patches** that fix how it behaves (the off-sweep follows you, the hold
+starts when the sweep finishes, buttons wire straight to ground, and presets can
+switch the whole thing on and off cleanly). The binary is here ready to flash,
+and so is everything needed to rebuild it.
+
+On top of that: six modes, nine presets, and three Home Assistant automations
+that decide when the stairs are live.
+
+🎮 **[Try the interactive demo](https://sygad.github.io/wled-staircase/)** — the dashboard card on the left, the
+stairs on the right. Press a trigger and watch the sweep, switch modes, set the
+alarm and trip the top sensor. No hardware needed.
+
+<!-- TODO: video. Replace the line below with:
 [![Watch it in action on YouTube](https://img.youtube.com/vi/<ID>/hqdefault.jpg)](https://www.youtube.com/watch?v=<ID>)
 
 ▶ **[Watch it in action on YouTube](https://www.youtube.com/watch?v=<ID>)**
 -->
-> 🎥 *Video coming soon.*
-> 📷 *Photos of the build coming soon.*
+> 🎥 *Video coming soon.* 📷 *Photos of the build coming soon.*
+
+---
+
+## ⚠️ This is a prototype
+
+**My staircase isn't 64 steps.** I wanted to see what the effect actually looked
+like at full height before committing it to the stairs, so I built it on two
+32 × 8 WS2812B panels chained into a single **8 × 64 matrix** — 512 LEDs, compact
+on the bench and very tall on screen, with each row of 8 standing in for one step.
+
+Nothing about that is a fudge: the firmware, the presets and the Home Assistant
+side are identical on real stairs. Wherever this repo says **rows**, read **your
+number of steps** — one short strip per step, wired as one chain, up to 64 of
+them. The [demo](https://sygad.github.io/wled-staircase/) shows exactly what the bench rig does.
 
 ---
 
@@ -24,6 +50,7 @@ at any part without reading the rest.
 ```
 README.md                       this page
 BUILD-WITH-AI.md                point your own AI at the repo and let it build it
+docs/index.html                 the interactive demo, served by GitHub Pages
 device/                         the exact backup from my controller
   cfg.json                        every WLED setting
   presets.json                    presets 1-9, byte-for-byte
@@ -47,6 +74,7 @@ images/                         the wiring diagram
 
 | I want to… | Go to |
 |---|---|
+| See what it actually does | [The interactive demo](https://sygad.github.io/wled-staircase/) |
 | Have an AI build it for me | [BUILD-WITH-AI.md](BUILD-WITH-AI.md) |
 | Build all of it myself | [Quick start](#quick-start) |
 | Take just one part | [The parts](#the-parts): open that part's folder |
@@ -126,9 +154,9 @@ The short version of everything that went wrong while building this.
 | Motion | Zigbee PIRs that already exist in Home Assistant | 7 |
 | Microphone | **INMP441** I2S — specified, not fitted yet | 1, 6 |
 
-An ESP32-S3 **with PSRAM** is required for more than 32 steps. A classic ESP32
-caps out at 32 segments; the earlier 33-stair build (and its own firmware) is in
-[sygad/wled-staircase-old](https://github.com/sygad/wled-staircase-old).
+An ESP32-S3 **with PSRAM** is required for more than 32 steps: WLED allows 64
+segments on a board with PSRAM and only 32 without, and this build needs one
+segment per step.
 
 ### Software, with the versions this was built and tested on
 

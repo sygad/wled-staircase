@@ -90,8 +90,8 @@ steps in order. The repo is the source of truth; do not invent values.
 One question at a time, waiting for each answer:
 
 1. **Board:** which ESP32? (This project needs an **ESP32-S3 with PSRAM** for
-   more than 32 steps. A classic ESP32 caps out at 32 segments — if that's what
-   they have, say so now and offer the 32-step version of the same build.)
+   more than 32 steps, because WLED allows only 32 segments without it. If they
+   have a classic ESP32, say so now: up to 32 steps still works, more does not.)
 2. **Steps:** how many steps, and how many LEDs per step? What LED type
    (WS2812B?) and colour order?
 3. **Layout:** separate strips wired as one chain, or chained matrix panels? Is
