@@ -152,6 +152,19 @@
     flex: 1; min-width: 0; min-height: 0; margin-left: 26px;
     display: flex; flex-direction: column; gap: 42px;
   }
+  .status {
+    display: flex; align-items: center; gap: 13px;
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 15px 17px; background: rgba(255, 255, 255, 0.03);
+  }
+  .status .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--ink-faint); }
+  .status b { display: block; color: var(--ink); font-weight: 600; }
+  .status .detail { color: var(--ink-dim); }
+  .status.ready { border-color: rgba(74, 222, 128, 0.35); background: rgba(74, 222, 128, 0.07); }
+  .status.ready .dot { background: var(--on); }
+  .status.override { border-color: rgba(255, 162, 60, 0.4); background: rgba(255, 162, 60, 0.08); }
+  .status.override .dot { background: var(--accent); }
+
   table.state { width: 100%; border-collapse: collapse; }
   table.state td { padding: 11px 0; border-bottom: 1px solid var(--line); }
   table.state tr:last-child td { border-bottom: 0; }
@@ -280,6 +293,14 @@
       </div>
 
       <div class="readout">
+        <div class="status" id="status" role="status">
+          <span class="dot" aria-hidden="true"></span>
+          <span>
+            <b id="status-mode">Daytime</b>
+            <span class="detail" id="status-detail">lights turned off</span>
+          </span>
+        </div>
+
         <div>
           <h2>What the controller is doing</h2>
           <table class="state">
@@ -331,6 +352,18 @@
   var ha = { power: true, moon: false, night: false, armed: false, mode: "Sweep" };
 
   function active() { return ha.power && (ha.night || ha.moon); }
+
+  // The real thing asks sun.sun. In the browser, the visitor's own clock is the
+  // nearest thing to it: dark between 18:00 and 06:00.
+  function isNight() { var h = new Date().getHours(); return h >= 18 || h < 6; }
+
+  // Day turning into night, or the other way, while the demo is open.
+  function watchClock() {
+    var n = isNight();
+    if (n === ha.night) return;
+    ha.night = n;
+    applyState(n ? "The sun has set" : "The sun is up");
+  }
 
   function setMode(value) {
     ha.mode = value;
@@ -597,6 +630,14 @@
     if (fw.master && fw.effect) lit = ROWS;
     else if (fw.master) { for (var r = 0; r < ROWS; r++) if (rows[r]) lit++; }
     document.getElementById("s-lit").textContent = lit + " / " + ROWS;
+
+    var mode = !ha.power ? ["", "Power off", "lights turned off"]
+      : ha.moon           ? ["override", "Override", "lights ready to run"]
+      : ha.night          ? ["ready", "Nighttime", "lights ready to run"]
+      :                     ["", "Daytime", "lights turned off"];
+    document.getElementById("status").className = "status " + mode[0];
+    document.getElementById("status-mode").textContent = mode[1];
+    document.getElementById("status-detail").textContent = mode[2];
   }
 
   var logEl = document.getElementById("log");
@@ -637,10 +678,14 @@
 
   // ---- go ------------------------------------------------------------------
   clearRows();
-  applyState("Boot — the sun is up");
-  log("The stairs only run at night — press <b>Moon</b>, then <b>Bottom</b> or <b>Top</b>");
+  ha.night = isNight();
+  applyState(ha.night ? "Boot — the sun has set" : "Boot — the sun is up");
+  log(ha.night
+    ? "It's night here, so the stairs are live — press <b>Bottom</b> or <b>Top</b>"
+    : "It's daytime here — press <b>Moon</b> to override, then <b>Bottom</b> or <b>Top</b>");
 
   function frame(now) {
+    watchClock();
     tick(now);
     draw();
     readout();
