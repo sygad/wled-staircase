@@ -42,6 +42,17 @@ them. The [demo](https://sygad.github.io/wled-staircase/) shows exactly what the
 
 ---
 
+## The whole build in one picture
+
+<a href="https://raw.githubusercontent.com/sygad/wled-staircase/main/images/wiring.svg" title="Open the wiring diagram full screen">
+  <img src="images/wiring.svg" alt="Wiring diagram: ESP32-S3, two 32x8 WS2812B panels, 5 V 30 A supply and two buttons" width="100%">
+</a>
+
+*Click the diagram to open it full screen.* Five wires and two buttons — the
+whole of it is in [Part 2 · Wiring and power](parts/02-wiring/README.md).
+
+---
+
 ## How this repo works
 
 Every piece of the build has a **number**, and that number is used everywhere:
