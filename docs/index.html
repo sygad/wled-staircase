@@ -321,6 +321,15 @@
   var DANGER_MS = 5000;
   var GEQ = [[255,0,0],[255,255,0],[0,255,0],[0,255,255],[0,0,255]];
 
+  // WLED's own Matrix effect, with the settings preset 4 carries:
+  //   speed 128  -> (256 - speed) >> 1 = 64 ms per row on a 64-row matrix
+  //   spawning rate 36 -> a new drop starts on (36 + 1) / 256 of steps
+  //   trail 26   -> fadeToBlackBy(30 + 26/255 * 220), i.e. each pixel keeps
+  //                 79.4% of its brightness per step, so a trail reads ~10 rows
+  // Custom colour is off, so the effect uses its own spawn and trail colours.
+  var MX_STEP_MS = 64, MX_SPAWN = (36 + 1) / 256, MX_KEEP = 1 - (30 + 26 / 255 * 220) / 255;
+  var MX_HEAD = [175, 255, 175], MX_TRAIL = [27, 130, 39];
+
   var canvas = document.getElementById("stairs");
   var ctx = canvas.getContext("2d");
   var CELL = canvas.width / COLS;
@@ -377,6 +386,7 @@
   function preset(name, why) {
     fw.preset = name;
     fw.phase = "idle"; fw.k = 0; fw.effect = null; fw.fade = null; alpha = 1;
+    mxHeads = []; mxTrail.fill(0); mxLast = 0;
     fw.rainbow = false; fw.whole = false; fw.base = WARM;
     clearRows();
     if (name === "Stairs Sweep") { fw.usermod = true; fw.master = false; }
@@ -461,24 +471,44 @@
 
     alpha = fw.whole ? fadeAlpha(now) : 1;
 
-    if (fw.effect === "matrix") matrixEffect();
+    if (fw.effect === "matrix") matrixEffect(now);
     if (fw.effect === "disco") discoEffect(now);
   }
 
   // ---- the two continuous effects -----------------------------------------
-  var drops = [], matrixGrid = null;
-  function matrixEffect() {
-    if (!drops.length) {
-      for (var c = 0; c < COLS; c++) drops.push({ y: Math.random() * ROWS, v: 12 + Math.random() * 18 });
+  // The same algorithm the firmware runs: every step the whole matrix fades a
+  // little, each falling head leaves a trail pixel behind and moves one row
+  // down, and now and then a new head spawns in a random column at the top.
+  var mxTrail = new Float32Array(ROWS * COLS);   // brightness left in each pixel
+  var mxHeads = [];                              // {c, y} with y counted from the top
+  var mxLast = 0;
+  function mxIndex(y, c) { return y * COLS + c; }
+
+  function matrixEffect(now) {
+    if (!mxLast) mxLast = now;
+    var guard = 0;
+    while (now - mxLast >= MX_STEP_MS && guard++ < 8) {
+      mxLast += MX_STEP_MS;
+      for (var i = 0; i < mxTrail.length; i++) mxTrail[i] *= MX_KEEP;
+      for (var h = mxHeads.length - 1; h >= 0; h--) {
+        var head = mxHeads[h];
+        mxTrail[mxIndex(head.y, head.c)] = 1;    // the pixel it leaves behind
+        if (head.y + 1 < ROWS) head.y++;
+        else mxHeads.splice(h, 1);
+      }
+      if (Math.random() < MX_SPAWN || !mxHeads.length) {
+        mxHeads.push({ c: Math.floor(Math.random() * COLS), y: 0 });
+      }
     }
-    var grid = [];
-    for (var c2 = 0; c2 < COLS; c2++) {
-      var d = drops[c2];
-      d.y += d.v * 0.016;
-      if (d.y - 14 > ROWS) { d.y = -Math.random() * 20; d.v = 12 + Math.random() * 18; }
-      grid.push(d.y);
+  }
+
+  function matrixPixel(y, c) {
+    for (var h = 0; h < mxHeads.length; h++) {
+      if (mxHeads[h].y === y && mxHeads[h].c === c) return MX_HEAD;
     }
-    matrixGrid = grid;
+    var v = mxTrail[mxIndex(y, c)];
+    if (v < 0.02) return null;
+    return [Math.round(MX_TRAIL[0] * v), Math.round(MX_TRAIL[1] * v), Math.round(MX_TRAIL[2] * v)];
   }
 
   var bars = new Array(COLS).fill(0);
@@ -497,12 +527,8 @@
       for (var c = 0; c < COLS; c++) {
         var col = null;
         if (fw.master) {
-          if (fw.effect === "matrix" && matrixGrid) {
-            var dist = matrixGrid[c] - (ROWS - 1 - r);     // falls from the top
-            if (dist >= 0 && dist < 14) {
-              var k = 1 - dist / 14;
-              col = dist < 1 ? [170, 255, 170] : [0, Math.round(40 + 180 * k), 0];
-            }
+          if (fw.effect === "matrix") {
+            col = matrixPixel(ROWS - 1 - r, c);            // y is counted from the top
           } else if (fw.effect === "disco") {
             if (r < bars[c] * ROWS) col = palette((r / ROWS) / 0.78);
           } else {

@@ -55,8 +55,12 @@ def presets(rows, width, bri):
         3: ("Stairs All",     {"tt": 0, "on": False, "bri": bri,
                                "seg": f({"fx": 0, "col": [WARM, [0, 0, 0], [0, 0, 0]], "on": False}),
                                "staircase": {"enabled": True}}),
+        # Matrix: speed 128 = 64 ms per row, spawning rate 36 puts about nine
+        # drops on the stairs at once, trail 26 is a slow fade so each one
+        # reads about ten steps long. Custom colour off: the effect's own
+        # bright head and green trail look better than flat dark green.
         4: ("Stairs Matrix",  {"tt": 0, "on": True, "bri": bri,
-                               "seg": f({"fx": MATRIX_FX, "sx": 128, "ix": 128, "c1": 128, "o1": True,
+                               "seg": f({"fx": MATRIX_FX, "sx": 128, "ix": 36, "c1": 26, "o1": False,
                                          "col": [[0, 140, 0], [0, 40, 0], [0, 0, 0]]}),
                                "staircase": {"enabled": False}}),
         5: ("Stairs Disco",   {"tt": 0, "on": True, "bri": bri,
