@@ -1,8 +1,8 @@
 diff --git a/usermods/Animated_Staircase/Animated_Staircase.cpp b/usermods/Animated_Staircase/Animated_Staircase.cpp
-index 2d2d27c..e1b2bf3 100644
+index 2d2d27c..f0b9b06 100644
 --- a/usermods/Animated_Staircase/Animated_Staircase.cpp
 +++ b/usermods/Animated_Staircase/Animated_Staircase.cpp
-@@ -9,6 +9,12 @@
+@@ -9,6 +9,13 @@
   */
  #include "wled.h"
  
@@ -11,11 +11,25 @@ index 2d2d27c..e1b2bf3 100644
 +//  P4 active-low trigger inputs (INPUT_PULLUP, LOW = triggered)
 +//  P5 while on, the opposite sensor is ignored
 +//  P6 enable/disable from presets never toggles master power and never plays an off-sweep
++//  P7 asymmetric fade when the whole staircase lights as one step (the All layout)
 +
  class Animated_Staircase : public Usermod {
    private:
  
-@@ -56,6 +62,9 @@ class Animated_Staircase : public Usermod {
+@@ -25,6 +32,12 @@ class Animated_Staircase : public Usermod {
+     unsigned int topMaxDist        = 50;    // default maximum measured distance in cm, top
+     unsigned int bottomMaxDist     = 50;    // default maximum measured distance in cm, bottom
+     bool togglePower               = false; // toggle power on/off with staircase on/off
++#ifdef STAIRCASE_V2
++    // P7: fades used only when one active segment covers the whole staircase (All). A per-step
++    // sweep (Sweep, Rainbow) keeps fading each step over segment_delay_ms.
++    unsigned long fade_in_ms       = 500;   // all rows fade up together over this
++    unsigned long fade_out_ms      = 2000;  // all rows fade down together over this
++#endif
+ 
+     /* runtime variables */
+     bool initDone = false;
+@@ -56,6 +69,9 @@ class Animated_Staircase : public Usermod {
      // Last time the lights were switched on or off
      unsigned long lastSwitchTime = 0;
  
@@ -25,7 +39,18 @@ index 2d2d27c..e1b2bf3 100644
      // segment id between onIndex and offIndex are on.
      // controll the swipe by setting/moving these indices around.
      // onIndex must be less than or equal to offIndex
-@@ -120,8 +129,16 @@ class Animated_Staircase : public Usermod {
+@@ -82,6 +98,10 @@ class Animated_Staircase : public Usermod {
+     static const char _enabled[];
+     static const char _segmentDelay[];
+     static const char _onTime[];
++#ifdef STAIRCASE_V2
++    static const char _fadeIn[];
++    static const char _fadeOut[];
++#endif
+     static const char _useTopUltrasoundSensor[];
+     static const char _topPIRorTrigger_pin[];
+     static const char _topEcho_pin[];
+@@ -120,8 +140,16 @@ class Animated_Staircase : public Usermod {
          //seg.setOption(SEG_OPTION_TRANSITIONAL, true); // not needed anymore as setOption() does it
        }
        strip.trigger();  // force strip refresh
@@ -42,7 +67,7 @@ index 2d2d27c..e1b2bf3 100644
      }
  
      /*
-@@ -156,6 +173,18 @@ class Animated_Staircase : public Usermod {
+@@ -156,6 +184,25 @@ class Animated_Staircase : public Usermod {
        return pulseIn(echoPin, HIGH, maxTimeUs) > 0;
      }
  
@@ -57,11 +82,18 @@ index 2d2d27c..e1b2bf3 100644
 +    }
 +
 +    bool fullyOn() { return onIndex == minSegmentId && offIndex == maxSegmentId; }
++#ifdef STAIRCASE_V2
++    // P7: a single active segment means the staircase lights and clears in one step, so the step
++    // delay is not a fade time any more and the two fade settings take over.
++    bool singleStep() { return maxSegmentId - minSegmentId == 1; }
++    // Hold off the power-off until the fade has actually finished, or it cuts the fade short.
++    unsigned long fadeOutSettle() { return singleStep() ? fade_out_ms + 100 : 2 * segment_delay_ms; }
++#endif
 +
      bool checkSensors() {
        bool sensorChanged = false;
  
-@@ -164,12 +193,12 @@ class Animated_Staircase : public Usermod {
+@@ -164,12 +211,12 @@ class Animated_Staircase : public Usermod {
  
          bottomSensorRead = bottomSensorWrite ||
            (!useUSSensorBottom ?
@@ -76,7 +108,7 @@ index 2d2d27c..e1b2bf3 100644
              ultrasoundRead(topPIRorTriggerPin, topEchoPin, topMaxDist*59)   // cm to us
            );
  
-@@ -191,12 +220,17 @@ class Animated_Staircase : public Usermod {
+@@ -191,12 +238,17 @@ class Animated_Staircase : public Usermod {
          topSensorWrite = false;
          bottomSensorWrite = false;
  
@@ -97,17 +129,18 @@ index 2d2d27c..e1b2bf3 100644
              if (togglePower && onIndex == offIndex && offMode) toggleOnOff(); // toggle power on if off
              // If the bottom sensor triggered, we need to swipe up, ON
              swipe = bottomSensorRead;
-@@ -213,6 +247,9 @@ class Animated_Staircase : public Usermod {
+@@ -213,6 +265,10 @@ class Animated_Staircase : public Usermod {
                }
                offIndex = onIndex;
              }
 +#ifdef STAIRCASE_V2
-+            strip.setTransition(segment_delay_ms); // each step fades in/out over one step
++            // P7: All fades up over fade_in_ms; a per-step sweep fades each step over one step
++            strip.setTransition(singleStep() ? fade_in_ms : segment_delay_ms);
 +#endif
              on = true;
            }
          }
-@@ -221,6 +258,9 @@ class Animated_Staircase : public Usermod {
+@@ -221,12 +277,19 @@ class Animated_Staircase : public Usermod {
      }
  
      void autoPowerOff() {
@@ -117,7 +150,17 @@ index 2d2d27c..e1b2bf3 100644
        if ((millis() - lastSwitchTime) > on_time_ms) {
          // if sensors are still on, do nothing
          if (bottomSensorState || topSensorState) return;
-@@ -236,7 +276,12 @@ class Animated_Staircase : public Usermod {
+ 
+         // Swipe OFF in the direction of the last sensor detection
+         swipe = lastSensor;
++#ifdef STAIRCASE_V2
++        // P7: All fades down over fade_out_ms, deliberately slower than the fade up
++        if (singleStep()) strip.setTransition(fade_out_ms);
++#endif
+         on = false;
+ 
+         DEBUG_PRINT(F("OFF -> Swipe "));
+@@ -236,7 +299,12 @@ class Animated_Staircase : public Usermod {
  
      void updateSwipe() {
        if ((millis() - lastTime) > segment_delay_ms) {
@@ -130,7 +173,7 @@ index 2d2d27c..e1b2bf3 100644
  
          byte oldOn  = onIndex;
          byte oldOff = offIndex;
-@@ -252,10 +297,25 @@ class Animated_Staircase : public Usermod {
+@@ -252,10 +320,25 @@ class Animated_Staircase : public Usermod {
            }
          }
          if (oldOn != onIndex || oldOff != offIndex) {
@@ -148,7 +191,7 @@ index 2d2d27c..e1b2bf3 100644
 +#ifdef STAIRCASE_V2
 +      // Power off only once the last row has finished fading out: the power change restarts every
 +      // segment's fade, which made the last rows of the off-sweep flash twice
-+      if (togglePower && onIndex == offIndex && !offMode && !on && bri && millis() - lastStepTime > 2 * segment_delay_ms) {
++      if (togglePower && onIndex == offIndex && !offMode && !on && bri && millis() - lastStepTime > fadeOutSettle()) {
 +        toggleOnOff();
 +        stateUpdated(CALL_MODE_DIRECT_CHANGE); // apply and report the power-off
 +      }
@@ -156,7 +199,7 @@ index 2d2d27c..e1b2bf3 100644
      }
  
      // send sensor values to JSON API
-@@ -297,9 +357,29 @@ class Animated_Staircase : public Usermod {
+@@ -297,9 +380,29 @@ class Animated_Staircase : public Usermod {
  
          // shorten the strip transition time to be equal or shorter than segment delay
          transitionDelay = segment_delay_ms;
@@ -186,7 +229,7 @@ index 2d2d27c..e1b2bf3 100644
          if (togglePower && !on && offMode) toggleOnOff(); // toggle power on if off
          // Restore segment options
          for (int i = 0; i <= strip.getLastActiveSegmentId(); i++) {
-@@ -310,6 +390,7 @@ class Animated_Staircase : public Usermod {
+@@ -310,6 +413,7 @@ class Animated_Staircase : public Usermod {
          strip.trigger();  // force strip update
          stateChanged = true;  // inform external devices/UI of change
          colorUpdated(CALL_MODE_DIRECT_CHANGE);
@@ -194,7 +237,7 @@ index 2d2d27c..e1b2bf3 100644
          DEBUG_PRINTLN(F("Animated Staircase disabled."));
        }
        enabled = enable;
-@@ -413,11 +494,21 @@ class Animated_Staircase : public Usermod {
+@@ -413,11 +517,21 @@ class Animated_Staircase : public Usermod {
        if (!staircase.isNull()) {
          if (staircase[FPSTR(_enabled)].is<bool>()) {
            en = staircase[FPSTR(_enabled)].as<bool>();
@@ -216,12 +259,40 @@ index 2d2d27c..e1b2bf3 100644
          readSensorsFromJson(staircase);
          DEBUG_PRINTLN(F("Staircase sensor state read from API."));
        }
-@@ -480,7 +571,7 @@ class Animated_Staircase : public Usermod {
+@@ -442,6 +556,10 @@ class Animated_Staircase : public Usermod {
+       staircase[FPSTR(_enabled)]                   = enabled;
+       staircase[FPSTR(_segmentDelay)]              = segment_delay_ms;
+       staircase[FPSTR(_onTime)]                    = on_time_ms / 1000;
++#ifdef STAIRCASE_V2
++      staircase[FPSTR(_fadeIn)]                    = fade_in_ms;
++      staircase[FPSTR(_fadeOut)]                   = fade_out_ms;
++#endif
+       staircase[FPSTR(_useTopUltrasoundSensor)]    = useUSSensorTop;
+       staircase[FPSTR(_topPIRorTrigger_pin)]       = topPIRorTriggerPin;
+       staircase[FPSTR(_topEcho_pin)]               = useUSSensorTop ? topEchoPin : -1;
+@@ -480,7 +598,13 @@ class Animated_Staircase : public Usermod {
        segment_delay_ms = (unsigned long) min((unsigned long)10000,max((unsigned long)10,(unsigned long)segment_delay_ms));  // max delay 10s
  
        on_time_ms = top[FPSTR(_onTime)] | on_time_ms/1000;
 -      on_time_ms = min(900,max(10,(int)on_time_ms)) * 1000; // min 10s, max 15min
 +      on_time_ms = min(900,max(1,(int)on_time_ms)) * 1000; // min 1s, max 15min
++#ifdef STAIRCASE_V2
++      fade_in_ms  = top[FPSTR(_fadeIn)]  | fade_in_ms;
++      fade_in_ms  = (unsigned long) min((unsigned long)10000,(unsigned long)fade_in_ms);  // setTransition takes uint16_t
++      fade_out_ms = top[FPSTR(_fadeOut)] | fade_out_ms;
++      fade_out_ms = (unsigned long) min((unsigned long)10000,(unsigned long)fade_out_ms);
++#endif
  
        useUSSensorTop     = top[FPSTR(_useTopUltrasoundSensor)] | useUSSensorTop;
        topPIRorTriggerPin = top[FPSTR(_topPIRorTrigger_pin)] | topPIRorTriggerPin;
+@@ -552,6 +676,10 @@ const char Animated_Staircase::_name[]                      PROGMEM = "staircase
+ const char Animated_Staircase::_enabled[]                   PROGMEM = "enabled";
+ const char Animated_Staircase::_segmentDelay[]              PROGMEM = "segment-delay-ms";
+ const char Animated_Staircase::_onTime[]                    PROGMEM = "on-time-s";
++#ifdef STAIRCASE_V2
++const char Animated_Staircase::_fadeIn[]                    PROGMEM = "fade-in-ms";
++const char Animated_Staircase::_fadeOut[]                   PROGMEM = "fade-out-ms";
++#endif
+ const char Animated_Staircase::_useTopUltrasoundSensor[]    PROGMEM = "useTopUltrasoundSensor";
+ const char Animated_Staircase::_topPIRorTrigger_pin[]       PROGMEM = "topPIRorTrigger_pin";
+ const char Animated_Staircase::_topEcho_pin[]               PROGMEM = "topEcho_pin";

@@ -22,11 +22,11 @@ running — so switching mode is one API call and nothing can end up half-applie
 |---|---|---|---|
 | 1 | **Stairs Sweep** (boot preset) | 64 row segments | Warm white (255, 160, 60). Fills in the trigger's direction, holds 5 s, empties the same way |
 | 2 | **Stairs Rainbow** | 64 row segments | Same sweep, each step a fixed colour: red at the bottom through to violet (128, 0, 255) at the top |
-| 3 | **Stairs All** | 1 full segment | Every step on together, 5 s, off together. A normal light switch |
+| 3 | **Stairs All** | 1 full segment | Every step together: fades up over 0.5 s, holds 5 s, fades away over 2 s (patch P7) |
 | 4 | **Stairs Matrix** | 1 full segment | 2D effect **Matrix** (fx 153), dark green, falling top → bottom. Runs continuously, ignores triggers |
 | 5 | **Stairs Disco** | 1 full segment | 2D effect **GEQ** (fx 139), bars rising from the bottom, custom palette. Runs continuously, ignores triggers |
 | 6 | **Stairs Danger** | 1 full segment | Solid red, everything lit. Used for five seconds at a time by Home Assistant |
-| 7 | **Stairs Off** | 1 full segment | Master power off, staircase logic off. Buttons do nothing |
+| 7 | **Stairs Off** | 1 full segment | Master power off, **staircase logic off** — so the buttons and sensors do nothing at all until another preset is applied |
 | 8 | **zz Trigger Bottom** | — | `{"staircase": {"bottom-sensor": true}}`: the same as pressing the bottom button |
 | 9 | **zz Trigger Top** | — | `{"staircase": {"top-sensor": true}}`: the same as pressing the top button |
 

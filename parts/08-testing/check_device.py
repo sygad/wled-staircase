@@ -96,6 +96,12 @@ def main():
     check(um["segment-delay-ms"] == a.step_ms, f"{a.step_ms} ms per step",
           f"{um['segment-delay-ms']} ms")
     check(um["on-time-s"] >= 1, f"on-time {um['on-time-s']} s")
+    if "fade-in-ms" in um:
+        check(0 <= um["fade-in-ms"] <= 10000 and 0 <= um["fade-out-ms"] <= 10000,
+              f"All fades {um['fade-in-ms']} ms up, {um['fade-out-ms']} ms down")
+    else:
+        check(False, "patch P7 present (fade-in-ms / fade-out-ms)",
+              "this firmware has no fade settings — All will snap on and off")
     check(cfg["def"]["ps"] == 1, "boots into preset 1", f"boots into preset {cfg['def']['ps']}")
 
     print("\nTrigger inputs idle")

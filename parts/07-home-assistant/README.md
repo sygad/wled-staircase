@@ -52,6 +52,22 @@ whether they are live:
   whole-house "ignore the sensors" switch. Delete that condition if you don't
   have one.
 
+> ### ⚠️ Outside that window the buttons are dead, and that is deliberate
+>
+> When the stairs aren't active, Home Assistant holds the controller on **Stairs
+> Off** — and that preset switches the staircase logic **off**. A disabled
+> usermod ignores *everything*: both wall buttons, both motion sensors and the
+> trigger presets alike. So in daylight, with Moon off, pressing the button at
+> the bottom of the stairs does nothing at all.
+>
+> This is the most confusing thing in the build. It has already sent me looking
+> for a wiring fault that didn't exist.
+>
+> **To test anything out of hours, switch Moon on first.** That holds the window
+> open, so Home Assistant leaves the stairs on a live preset and the buttons
+> answer again. Switch it off when you've finished. Without it you are measuring
+> a deaf device.
+
 ## The three helpers
 
 | Entity | Type | Purpose |

@@ -14,6 +14,19 @@ Two values are placeholders rather than mine: the Wi-Fi SSID
 (`CHANGE-ME-WIFI-SSID`) and the mDNS hostname (`wled-staircase`). Wi-Fi passwords
 are never in a WLED backup.
 
+One value is deliberately not what my controller reported when this was taken:
+`um.staircase.enabled` is **true** here. The controller said `false`, because it
+was daylight and Home Assistant had applied Stairs Off — and shipping that would
+hand you a config that boots with the staircase logic disabled and the buttons
+dead. Read the warning in [Part 5](../parts/05-wled-settings/README.md): it is
+the same trap in a different hat.
+
+`fade-in-ms` and `fade-out-ms` appear here because the controller reports its
+live settings, but on my board they are still the firmware's own defaults rather
+than saved values — see the warning in
+[Part 5](../parts/05-wled-settings/README.md) before saving a config to change
+that.
+
 **Don't restore `cfg.json` onto your own board as it is** — the LED count, pins
 and power limit are mine. Generate yours instead:
 

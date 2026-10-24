@@ -2,7 +2,8 @@
 """Build the WLED settings, presets and palette for a matrix staircase.
 
 Writes (into --out, default ./out):
-  cfg-update.json   LED output, 2D matrix, power limit, usermod settings, boot preset
+  cfg-update.json   LED output, 2D matrix, power limit, usermod settings
+                    (including the All preset's fade times), boot preset
   presets.json      presets 1-9, ready to upload as /presets.json
   palette0.json     the GEQ palette the Disco preset uses
 
@@ -94,6 +95,7 @@ def cfg_update(a):
         }},
         "um": {"staircase": {
             "enabled": True, "segment-delay-ms": a.step_ms, "on-time-s": a.on_time,
+            "fade-in-ms": a.fade_in, "fade-out-ms": a.fade_out,
             "useTopUltrasoundSensor": False, "topPIRorTrigger_pin": a.top_pin, "topEcho_pin": -1,
             "useBottomUltrasoundSensor": False, "bottomPIRorTrigger_pin": a.bottom_pin,
             "bottomEcho_pin": -1, "top-dist-cm": 50, "bottom-dist-cm": 50, "toggle-on-off": True,
@@ -119,6 +121,8 @@ def main():
     p.add_argument("--top-pin", type=int, default=5)
     p.add_argument("--step-ms", type=int, default=100, help="milliseconds per step (default 100)")
     p.add_argument("--on-time", type=int, default=5, help="seconds fully lit, after the sweep (default 5)")
+    p.add_argument("--fade-in", type=int, default=500, help="ms for the All preset to fade up (default 500)")
+    p.add_argument("--fade-out", type=int, default=2000, help="ms for the All preset to fade away (default 2000)")
     p.add_argument("--max-ma", type=int, default=26000, help="power limit in mA, ~85%% of your supply")
     p.add_argument("--led-ma", type=int, default=55, help="mA per LED at full white (default 55)")
     p.add_argument("--brightness", type=int, default=255)
@@ -134,6 +138,8 @@ def main():
         p.error("that is a lot of LEDs for one output; split it across pins by hand")
     if a.on_time < 1:
         p.error("the usermod's minimum on-time is 1 s")
+    if not (0 <= a.fade_in <= 10000 and 0 <= a.fade_out <= 10000):
+        p.error("the fades are clamped to 0-10000 ms by the firmware")
 
     os.makedirs(a.out, exist_ok=True)
     files = {
@@ -150,6 +156,7 @@ def main():
     print(f"\n{a.rows} steps x {a.width} LEDs = {a.rows * a.width} LEDs"
           f"\nsweep {sweep:.1f} s on, {a.on_time} s lit, {sweep:.1f} s off"
           f" ({2 * sweep + a.on_time:.1f} s per trigger)"
+          f"\nAll: fades up over {a.fade_in / 1000:.1f} s, holds, fades away over {a.fade_out / 1000:.1f} s"
           f"\nworst-case draw {a.rows * a.width * a.led_ma / 1000:.1f} A, limited to {a.max_ma / 1000:.1f} A")
 
     if not a.apply:

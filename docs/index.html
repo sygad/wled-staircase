@@ -172,7 +172,8 @@
         Everything below behaves the way the real thing does: <b>100&nbsp;ms per
         step</b>, so a full sweep takes 6.4&nbsp;s, then a <b>5&nbsp;second
         hold</b> that only starts once the last step has lit, then the same sweep
-        in reverse. <a href="https://github.com/sygad/wled-staircase">The project
+        in reverse. <b>All</b> is the exception: no sweep, just every step fading
+        up together over half a second and away again over two. <a href="https://github.com/sygad/wled-staircase">The project
         is on GitHub</a>.
       </p>
     </div>
@@ -291,6 +292,8 @@
   var ROWS = 64, COLS = 8;
   var STEP_MS = 100;          // segment-delay-ms
   var ON_TIME_MS = 5000;      // on-time-s, counted from the end of the sweep (P3)
+  var FADE_IN_MS = 500;       // fade-in-ms: the All preset only (P7)
+  var FADE_OUT_MS = 2000;     // fade-out-ms: the All preset only (P7)
   var WARM = [255, 160, 60];
   var RED = [255, 0, 0];
   var DANGER_MS = 5000;
@@ -330,16 +333,23 @@
     dir: "bottom",
     k: 0,
     at: 0,
-    whole: false         // "All": every step together
+    whole: false,        // "All": every step together
+    fade: null           // All fades up and down as one (P7)
   };
-  var dangerUntil = 0;
+  var dangerUntil = 0, alpha = 1;
+
+  function fadeAlpha(now) {
+    if (!fw.fade) return 1;
+    var t = Math.min(1, (now - fw.fade.start) / fw.fade.dur);
+    return fw.fade.from + (fw.fade.to - fw.fade.from) * t;
+  }
 
   function rowColour(r) { return fw.rainbow ? hsv((r / (ROWS - 1)) * 0.75, 1, 1) : fw.base; }
   function clearRows() { for (var r = 0; r < ROWS; r++) rows[r] = null; }
 
   function preset(name, why) {
     fw.preset = name;
-    fw.phase = "idle"; fw.k = 0; fw.effect = null;
+    fw.phase = "idle"; fw.k = 0; fw.effect = null; fw.fade = null; alpha = 1;
     fw.rainbow = false; fw.whole = false; fw.base = WARM;
     clearRows();
     if (name === "Stairs Sweep") { fw.usermod = true; fw.master = false; }
@@ -374,7 +384,9 @@
     fw.k = 0;
     fw.at = performance.now();
     fw.master = true;                       // toggle-on-off brings the power up
-    log(source + " → sweep from the <b>" + dir + "</b>");
+    log(fw.whole
+      ? source + " → <b>All</b>: every step fades up over 0.5 s"
+      : source + " → sweep from the <b>" + dir + "</b>");
   }
 
   function rowAt(i) { return fw.dir === "bottom" ? i : ROWS - 1 - i; }
@@ -387,7 +399,10 @@
 
     if (fw.phase === "on") {
       if (fw.whole) {
+        // P7: every step comes up together over fade-in-ms. The hold starts as
+        // the fade begins, not as it finishes — the same as the firmware.
         for (var r = 0; r < ROWS; r++) rows[r] = rowColour(r);
+        fw.fade = { from: 0, to: 1, start: now, dur: FADE_IN_MS };
         fw.phase = "hold"; fw.at = now;
       } else {
         while (fw.k < ROWS && now - fw.at >= STEP_MS) {
@@ -401,7 +416,12 @@
       if (now - fw.at >= ON_TIME_MS) { fw.phase = "off"; fw.k = 0; fw.at = now; }
     } else if (fw.phase === "off") {
       if (fw.whole) {
-        clearRows(); fw.phase = "idle"; fw.master = false;
+        if (!fw.fade || fw.fade.to !== 0) {
+          fw.fade = { from: fadeAlpha(now), to: 0, start: now, dur: FADE_OUT_MS };
+        }
+        if (now - fw.fade.start >= FADE_OUT_MS) {
+          clearRows(); fw.phase = "idle"; fw.master = false; fw.fade = null;
+        }
       } else {
         while (fw.k < ROWS && now - fw.at >= STEP_MS) {
           rows[rowAt(fw.k)] = null;         // empties the way it filled
@@ -411,6 +431,8 @@
         if (fw.k >= ROWS) { fw.phase = "idle"; fw.master = false; }
       }
     }
+
+    alpha = fw.whole ? fadeAlpha(now) : 1;
 
     if (fw.effect === "matrix") matrixEffect();
     if (fw.effect === "disco") discoEffect(now);
@@ -472,6 +494,10 @@
     roundRect(x + pad, y + pad, size, size, size * 0.3);
     ctx.fill();
     if (!col) return;
+    if (alpha < 1) {
+      col = [Math.round(col[0] * alpha), Math.round(col[1] * alpha), Math.round(col[2] * alpha)];
+      if (col[0] + col[1] + col[2] < 6) return;
+    }
     ctx.save();
     ctx.shadowColor = "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0.85)";
     ctx.shadowBlur = CELL * 0.9;

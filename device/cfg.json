@@ -312,6 +312,8 @@
       "enabled": true,
       "segment-delay-ms": 100,
       "on-time-s": 5,
+      "fade-in-ms": 500,
+      "fade-out-ms": 2000,
       "useTopUltrasoundSensor": false,
       "topPIRorTrigger_pin": 5,
       "topEcho_pin": -1,

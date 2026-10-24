@@ -1,9 +1,9 @@
 [← Part 3 · Firmware](../03-firmware/README.md) · [All parts](../../README.md#the-parts) · [Part 5 · WLED settings →](../05-wled-settings/README.md)
 
-# Part 4 · The six behaviour patches
+# Part 4 · The seven behaviour patches
 
 Everything that makes the stairs behave the way they should, rather than the way
-the stock usermod behaves. Six numbered changes, P1 to P6, plus the WLED 16
+the stock usermod behaves. Seven numbered changes, P1 to P7, plus the WLED 16
 refinements that stop a 64-segment sweep from stuttering.
 
 ## At a glance
@@ -16,7 +16,7 @@ refinements that stop a 64-segment sweep from stuttering.
 | **Gated by** | `-D STAIRCASE_V2` for P3–P6, so a build without the flag behaves exactly as stock |
 | **Proved by** | the preset-to-preset test in [Part 8](../08-testing/README.md) |
 
-## The six patches
+## The seven patches
 
 | # | What it does | Gated? |
 |---|---|---|
@@ -26,8 +26,9 @@ refinements that stop a 64-segment sweep from stuttering.
 | P4 | Trigger inputs are active-low: a button to ground, no resistors | `STAIRCASE_V2` |
 | P5 | While the stairs are lit, the opposite sensor is ignored | `STAIRCASE_V2` |
 | P6 | Presets can switch the staircase logic on and off cleanly | `STAIRCASE_V2` |
+| P7 | "All" fades up quickly and down slowly, instead of snapping | `STAIRCASE_V2` |
 
-P1 and P2 are improvements anyone would want, so they are unconditional. P3–P6
+P1 and P2 are improvements anyone would want, so they are unconditional. P3–P7
 change behaviour that an existing setup may be relying on — the trigger polarity
 most of all — so they sit behind the build flag and leave an unflagged build
 behaving exactly as stock.
@@ -159,7 +160,65 @@ if (!enabled) return;   // triggers do nothing while disabled
 The last line matters: it means a stray trigger from Home Assistant while the
 stairs are in Matrix or Off mode does nothing at all.
 
-### 7. Three fixes for 64 segments on WLED 16
+### 7. P7 · "All" fades, and only "All"
+
+The **All** preset puts one segment across the whole staircase
+([Part 6](../06-presets/README.md)), so there is no sweep to watch — every step
+came on at once and went off at once, which looked like a light switch rather
+than something designed. P7 gives that one case a **quick fade up and a slow fade
+down**: 0.5 s on, 2 s off.
+
+Two new usermod settings, saved with the rest and clamped to 0–10000 ms:
+
+| Setting | Default | What it does |
+|---|---|---|
+| `fade-in-ms` | **500** | How long every step takes to come up together |
+| `fade-out-ms` | **2000** | How long they take to fade away |
+
+The scope is the interesting part. The fades apply **only when one active segment
+covers the whole staircase**:
+
+```c
+bool singleStep() { return maxSegmentId - minSegmentId == 1; }
+
+// on the way on, in checkSensors()
+strip.setTransition(singleStep() ? fade_in_ms : segment_delay_ms);
+
+// on the way off, in autoPowerOff(), just before on = false
+if (singleStep()) strip.setTransition(fade_out_ms);
+```
+
+Sweep and Rainbow are left alone on purpose. In those presets each step is its
+own segment and `segment-delay-ms` **is** the per-step fade — the 100 ms fade of
+one step overlapping the next is exactly what makes a sweep look like a sweep.
+Dropping a 500 ms fade in there would smear 64 overlapping steps into mush and
+change a mode nobody asked to change.
+
+Measured on the real controller, triggering All twice: the steps are up by about
+0.25 s, start fading at 5.3 s, and the strip is dark about 2 s later.
+
+> One honest wrinkle: the on-time starts when the fade-in **begins**, not when it
+> finishes, so a 5 s hold really means 0.5 s of ramp and 4.5 s at full brightness.
+> It looks right, so it stays.
+
+### 8. The latent bug P7 flushed out
+
+Worth knowing if you adapt this usermod. The power-off guard from the fixes below
+waited `2 * segment_delay_ms` — 200 ms here — after the final step before cutting
+master power. That was fine while every fade was one step long. Ask for a 2 s
+fade-out and the power went off 200 ms in, so the strip snapped to black instead
+of fading.
+
+```c
+unsigned long fadeOutSettle() {
+  return singleStep() ? fade_out_ms + 100 : 2 * segment_delay_ms;
+}
+```
+
+The bug had been there since the fade fix was written; nothing had ever asked for
+a slow fade, so nothing had ever shown it up.
+
+### 9. Three fixes for 64 segments on WLED 16
 
 These live inside the `STAIRCASE_V2` blocks too. None of them changes behaviour
 on paper; all three were visible on the stairs.
@@ -180,6 +239,9 @@ of snapping.
 2. Build with `-D STAIRCASE_V2` to get P3–P6, or without it for P1 and P2 only.
 3. Prove it on the board, not on paper:
    `python3 parts/08-testing/check_device.py --host <ip> --sweep`.
+4. Adjust the fades if you want to, in **Config → Usermods → Animated
+   Staircase**, or with `--fade-in` / `--fade-out` on
+   [`tools/make_staircase.py`](../../tools/make_staircase.py).
 
 ---
 

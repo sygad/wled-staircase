@@ -1,4 +1,4 @@
-[← Part 2 · Wiring and power](../02-wiring/README.md) · [All parts](../../README.md#the-parts) · [Part 4 · The six behaviour patches →](../04-behaviour-patches/README.md)
+[← Part 2 · Wiring and power](../02-wiring/README.md) · [All parts](../../README.md#the-parts) · [Part 4 · The seven behaviour patches →](../04-behaviour-patches/README.md)
 
 # Part 3 · Firmware
 
@@ -23,8 +23,8 @@ Any ESP32-S3 with 16 MB flash and PSRAM should take them.
 
 | File | Use it for | SHA-256 |
 |---|---|---|
-| `WLED_16.0.1_ESP32-S3_Staircase_FACTORY.bin` | **USB flashing** to address `0x0`. Bootloader, partition table, OTA data and app in one image | `1eb09719b5bb8170b7373fd8f63da450af50932f83b571c83481bc6f69a28d2a` |
-| `WLED_16.0.1_ESP32-S3_Staircase_OTA.bin` | **Updating** a board already running WLED, through Manual OTA in the web UI | `594f1131aac62986220492c9116042ff57f791f03f1764b149a7b7eaf7e45b57` |
+| `WLED_16.0.1_ESP32-S3_Staircase_FACTORY.bin` | **USB flashing** to address `0x0`. Bootloader, partition table, OTA data and app in one image | `bbe6298b4962dedd4793784d3de43b452c12df941f1bcc602d14c3677355d66c` |
+| `WLED_16.0.1_ESP32-S3_Staircase_OTA.bin` | **Updating** a board already running WLED, through Manual OTA in the web UI | `5509f0c8357012bd111fd4e694c3abfb9e5ecdc2916d8aac3350403ee985a46b` |
 
 The first flash goes over USB; everything after that is a Manual OTA with the
 second file — see [Flashing it](#flashing-it-usb-first-ota-afterwards) below.
@@ -125,4 +125,4 @@ esptool.py --chip esp32s3 merge_bin -o FACTORY.bin \
 
 ---
 
-[← Part 2 · Wiring and power](../02-wiring/README.md) · [All parts](../../README.md#the-parts) · [Part 4 · The six behaviour patches →](../04-behaviour-patches/README.md)
+[← Part 2 · Wiring and power](../02-wiring/README.md) · [All parts](../../README.md#the-parts) · [Part 4 · The seven behaviour patches →](../04-behaviour-patches/README.md)
