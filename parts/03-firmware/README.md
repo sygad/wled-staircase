@@ -81,6 +81,18 @@ powered by the LED supply, with no USB anywhere near it:
 3. The board reboots itself and comes back on its boot preset. Settings and
    presets survive the update.
 
+Or from a terminal, which is quicker if you are rebuilding often:
+
+```bash
+curl -F "update=@parts/03-firmware/WLED_16.0.1_ESP32-S3_Staircase_OTA.bin" http://<ip>/update
+```
+
+> **The machine you flash from has to be on the controller's own subnet.** WLED
+> refuses OTA uploads from another subnet by default (*Config → Security &
+> Updates → "Deny OTA from other subnets"*). If your LEDs live on an IoT VLAN
+> and your laptop doesn't, move the laptop onto that network for the upload —
+> the refusal looks like a failed transfer rather than a permissions error.
+
 > ⚠️ **Manual OTA only — never WLED's "Update" button.** The built-in online
 > update fetches a stock release, which has no staircase usermod and a lower
 > segment limit, and the whole project stops working until you reflash this
