@@ -2,7 +2,11 @@
 
 # Part 2 · Wiring and power
 
-![Wiring diagram](wiring.svg)
+<a href="https://raw.githubusercontent.com/sygad/wled-staircase/main/images/wiring.svg" title="Open the wiring diagram full screen">
+  <img src="wiring.svg" alt="Wiring diagram" width="100%">
+</a>
+
+*Click the diagram to open it full screen.*
 
 Five wires and two buttons. The only things that bite are the common ground, the
 two 5 V sources, and which end of the chain the data goes in.

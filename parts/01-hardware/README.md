@@ -2,7 +2,11 @@
 
 # Part 1 · Hardware
 
-![Wiring diagram](../../images/wiring.svg)
+<a href="https://raw.githubusercontent.com/sygad/wled-staircase/main/images/wiring.svg" title="Open the wiring diagram full screen">
+  <img src="../../images/wiring.svg" alt="Wiring diagram" width="100%">
+</a>
+
+*Click the diagram to open it full screen.*
 
 What the controller is made of, and why each piece was chosen over the obvious
 cheaper option.
