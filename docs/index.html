@@ -35,7 +35,7 @@
     margin: 0 auto;
     padding: 22px 20px;
     display: grid;
-    grid-template-columns: minmax(360px, 0.82fr) minmax(560px, 1.18fr);
+    grid-template-columns: minmax(430px, 0.94fr) minmax(540px, 1.06fr);
     gap: 22px;
     min-height: 100vh;
     align-items: start;
@@ -88,6 +88,7 @@
   .pill.on { background: var(--accent); color: #1b1200; font-weight: 600; }
   .bubble-row { display: flex; gap: 10px; }
   .bubble-row > * { flex: 1 1 0; justify-content: center; min-width: 0; }
+  .bubble-row .selectpill { flex-grow: 1.35; }
 
   /* the mode dropdown, drawn the way Bubble Card draws a select sub-button */
   .selectpill { position: relative; display: flex; align-items: center; gap: 9px;
@@ -105,7 +106,7 @@
   }
   .selectpill select:focus-visible { opacity: 1; color: var(--ink); }
   .selectpill select option { background: var(--panel-2); color: var(--ink); }
-  .selectpill .value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .selectpill .value { flex: 1; min-width: max-content; white-space: nowrap; }
   .selectpill .chev { opacity: 0.65; }
 
   .note { color: var(--ink-dim); margin: 24px 0 0; }
