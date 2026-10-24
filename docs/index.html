@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WLED Staircase — interactive demo</title>
+<title>WLED Staircase - Interactive Demo</title>
 <meta name="description" content="Play with the WLED Staircase project in your browser: the Home Assistant card on the left, 64 steps on the right. No hardware needed.">
 <style>
   :root {
@@ -56,7 +56,6 @@
   }
 
   h1 { font-size: 27px; margin: 0; letter-spacing: -0.015em; line-height: 1.2; }
-  .sub { color: var(--ink-dim); margin: 6px 0 0; }
   .intro p { margin: 24px 0 0; color: var(--ink-dim); }
   .intro p strong, .intro p b { color: var(--ink); font-weight: 600; }
   h2 {
@@ -109,7 +108,20 @@
   .selectpill .value { flex: 1; min-width: max-content; white-space: nowrap; }
   .selectpill .chev { opacity: 0.65; }
 
+  h2.sub-h { margin: 28px 0 14px; }
+
+  .steps { color: var(--ink-dim); margin: 0; padding: 0; list-style: none; }
+  .steps li { position: relative; padding-left: 18px; margin-top: 10px; }
+  .steps li:first-child { margin-top: 0; }
+  .steps li::before {
+    content: ""; position: absolute; left: 2px; top: 0.56em;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--ink-faint);
+  }
+  .steps b { color: var(--ink); font-weight: 600; }
+
   .note { color: var(--ink-dim); margin: 24px 0 0; }
+  .note a { color: var(--accent); }
+  .note.gh { margin: 0; }
   .note b { color: var(--ink); font-weight: 600; }
   .note code {
     background: rgba(255, 255, 255, 0.07); padding: 1px 6px; border-radius: 6px;
@@ -185,21 +197,11 @@
   <!-- ======================= LEFT: what it is, and the controls ======================= -->
   <section class="card left">
     <div class="intro">
-      <h1>WLED Staircase</h1>
-      <p class="sub">An interactive demo — no hardware needed.</p>
+      <h1>WLED Staircase - Interactive Demo</h1>
       <p>
-        Stair lights that fill one step at a time as you walk in, hold while
-        you're on the stairs, then empty the way you came. An ESP32-S3 drives
-        64 steps as a single WS2812B matrix, and Home Assistant decides when the
-        stairs are live.
-      </p>
-      <p>
-        Everything below behaves the way the real thing does: <b>100&nbsp;ms per
-        step</b>, so a full sweep takes 6.4&nbsp;s, then a <b>5&nbsp;second
-        hold</b> that only starts once the last step has lit, then the same sweep
-        in reverse. <b>All</b> is the exception: no sweep, just every step fading
-        up together over half a second and away again over two. <a href="https://github.com/sygad/wled-staircase">The project
-        is on GitHub</a>.
+        Everything in this demo behaves the way the real thing does. It is
+        designed to work at night only — override by pressing the <b>Moon</b>
+        button to force it into night-time mode.
       </p>
     </div>
 
@@ -245,35 +247,33 @@
           </div>
         </div>
       </div>
-      <p class="note">
-        <b>Top</b> and <b>Bottom</b> start a sweep from that end of the stairs —
-        the same thing the push button or the motion sensor there does.
-        <b>Moon</b> forces night mode on: the stairs normally only run between
-        sunset and sunrise, and Moon keeps them live when the sun is up. It stays
-        on until you switch it off. <b>Power</b> is the master switch.
-      </p>
+      <h2 class="sub-h">Instructions</h2>
+      <ul class="steps">
+        <li>Press the <b>Top</b> / <b>Bottom</b> buttons to simulate walking up or down the stairs.</li>
+        <li><b>Sweep</b> and <b>Rainbow</b> presets are direction aware.</li>
+        <li><b>All</b> turns on every step at once, in either direction.</li>
+        <li><b>Matrix</b> and <b>Disco</b> are just for fun.</li>
+      </ul>
     </div>
 
     <div class="demo-only">
-      <h2>Demo controls <span class="badge">not in Home Assistant</span></h2>
+      <h2>Alarm <span class="badge">not in Home Assistant</span></h2>
       <div class="conds">
-        <button class="pill on" id="btn-night" aria-pressed="true">
-          <svg class="ic" viewBox="0 0 24 24"><path d="M3.55 19.09L4.96 20.5L6.76 18.71L5.34 17.29M12 6C8.69 6 6 8.69 6 12S8.69 18 12 18 18 15.31 18 12C18 8.68 15.31 6 12 6M20 13H23V11H20M17.24 18.71L19.04 20.5L20.45 19.09L18.66 17.29M20.45 5L19.04 3.6L17.24 5.39L18.66 6.81M13 1H11V4H13M6.76 5.39L4.96 3.6L3.55 5L5.34 6.81L6.76 5.39M1 13H4V11H1M13 20H11V23H13"/></svg>
-          After sunset
-        </button>
         <button class="pill" id="btn-armed" aria-pressed="false">
           <svg class="ic" viewBox="0 0 24 24"><path d="M11,13H13V16H16V11H18L12,6L6,11H8V16H11V13M12,1L21,5V11C21,16.55 17.16,21.74 12,23C6.84,21.74 3,16.55 3,11V5L12,1Z"/></svg>
-          Alarm armed home
+          Alarm armed house
         </button>
       </div>
       <p class="note">
-        These two aren't buttons you'd ever press. In the real system they are
-        things the house already knows: <b>after sunset</b> comes from
-        <code>sun.sun</code>, which Home Assistant works out from your location,
-        and <b>armed home</b> comes from your alarm panel. They're here so you can
-        move time and set the alarm without waiting for either.
+        Press <b>Alarm armed house</b> to simulate the downstairs floor being
+        armed, then press <b>Top</b> to see the stairs light up, warning you
+        that downstairs is armed.
       </p>
     </div>
+
+    <p class="note gh">
+      <a href="https://github.com/sygad/wled-staircase">Full project details on GitHub</a>.
+    </p>
   </section>
 
   <!-- ======================= RIGHT: the stairs, and what they're doing ======================= -->
@@ -337,7 +337,7 @@
   var CELL = canvas.width / COLS;
 
   // ---- the Home Assistant side --------------------------------------------
-  var ha = { power: true, moon: false, night: true, armed: false, mode: "Sweep" };
+  var ha = { power: true, moon: false, night: false, armed: false, mode: "Sweep" };
 
   function active() { return ha.power && (ha.night || ha.moon); }
 
@@ -406,8 +406,12 @@
   // A trigger: the push button, the motion sensor, or the card's Top / Bottom.
   function trigger(dir, source) {
     if (ha.armed && dir === "top" && active()) {
-      preset("Stairs Danger", source + " while the alarm is armed home");
+      preset("Stairs Danger", source + " while the house alarm is armed");
       dangerUntil = performance.now() + DANGER_MS;
+      return;
+    }
+    if (!active()) {
+      log(source + " ignored — the stairs only run at night. Press <b>Moon</b> to force night mode");
       return;
     }
     if (!fw.usermod) { log(source + " ignored — the staircase logic is off in this mode"); return; }
@@ -629,11 +633,8 @@
   toggleButton("btn-moon", "moon", function () {
     applyState(ha.moon ? "Moon on — night mode forced" : "Moon off");
   });
-  toggleButton("btn-night", "night", function () {
-    applyState(ha.night ? "The sun has set" : "The sun is up");
-  });
   toggleButton("btn-armed", "armed", function () {
-    log(ha.armed ? "Alarm armed home — the top sensor now means Danger" : "Alarm disarmed");
+    log(ha.armed ? "Alarm armed house — the top sensor now means Danger" : "Alarm disarmed");
   });
 
   document.getElementById("mode").addEventListener("change", function (e) {
@@ -645,8 +646,8 @@
 
   // ---- go ------------------------------------------------------------------
   clearRows();
-  preset("Stairs Sweep", "Boot preset");
-  log("Press <b>Bottom</b> or <b>Top</b> to walk onto the stairs");
+  applyState("Boot — the sun is up");
+  log("The stairs only run at night — press <b>Moon</b>, then <b>Bottom</b> or <b>Top</b>");
 
   function frame(now) {
     tick(now);
