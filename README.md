@@ -115,6 +115,12 @@ explained once in **[shared/README.md](shared/README.md)**.
 | **Danger** | Not a mode you pick: a top sensor while the alarm is armed turns everything red for five seconds, then puts the previous mode back |
 | **Off** | Dark, buttons dead |
 
+**When it runs.** These are lights for the dark: Home Assistant only lets the
+stairs light between sunset and sunrise, worked out from `sun.sun` rather than a
+clock, so it tracks the seasons on its own. The **Moon** toggle forces night mode
+on when you want them live anyway — a gloomy afternoon, or showing somebody — and
+latches until you turn it off. **Power** is the master switch above both.
+
 The buttons at the top and bottom of the stairs are wired straight to the
 controller, so **the stairs work with Home Assistant switched off** — and after a
 power cut it comes back as Sweep on its own.

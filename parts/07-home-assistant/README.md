@@ -29,15 +29,25 @@ PIR / button ─┐
 mode / power ─┘
 ```
 
-One rule decides whether the stairs are live at all:
+**These are stair lights for the dark.** In daylight they do nothing at all —
+there is no point lighting a staircase you can already see. One rule decides
+whether they are live:
 
 > **Active** = Power **on** and the house motion toggle **on** and (the sun is
 > **below the horizon** or Moon is **on**).
 
-- **Power** is absolute. Off means Stairs Off, buttons dead, and the mode reset
-  to Sweep.
-- **Moon** is a manual override that latches: it keeps the stairs live in
-  daylight until it's switched off again.
+- **Night is the sun, not a clock.** The condition reads `sun.sun`, which Home
+  Assistant works out from your latitude and longitude, so the stairs follow
+  sunset and sunrise through the year with nothing to adjust. Outside those
+  hours Home Assistant holds the controller on **Stairs Off**, and the buttons
+  do nothing.
+- **Moon forces night mode on.** It is a manual override of that sun condition:
+  switch it on and the stairs behave exactly as if the sun had set — on a dark
+  winter afternoon, in a windowless stairwell, or to show somebody how it works.
+  It **latches**, staying on until you switch it off, so it is not a timer and
+  not a brightness setting.
+- **Power** is absolute, and sits above both. Off means Stairs Off, buttons
+  dead, and the mode reset to Sweep.
 - The **house motion toggle** (`input_boolean.motion_sensors` here) is my own
   whole-house "ignore the sensors" switch. Delete that condition if you don't
   have one.
@@ -47,7 +57,7 @@ One rule decides whether the stairs are live at all:
 | Entity | Type | Purpose |
 |---|---|---|
 | `input_boolean.stairs_s3_power` | toggle | The master switch for the whole thing |
-| `input_boolean.stairs_s3_moon` | toggle | Keep the stairs live outside the dark hours |
+| `input_boolean.stairs_s3_moon` | toggle | Force night mode: keeps the stairs live when the sun is up |
 | `input_select.stairs_s3_mode` | dropdown | Sweep · All · Rainbow · Matrix · Disco |
 
 **Danger is deliberately not in the dropdown.** It is not a mode you choose; it

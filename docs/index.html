@@ -16,226 +16,273 @@
     --accent: #ffa23c;
     --accent-dim: rgba(255, 162, 60, 0.18);
     --on: #4ade80;
-    --radius: 16px;
+    --radius: 18px;
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     margin: 0;
-    background: radial-gradient(1200px 600px at 70% -10%, #1c2130 0%, var(--bg) 60%);
+    background: radial-gradient(1200px 700px at 72% -12%, #1c2130 0%, var(--bg) 60%);
     color: var(--ink);
-    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    min-height: 100vh;
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   a { color: var(--accent); }
-  header {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 28px 16px 8px;
-  }
-  h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: -0.01em; }
-  header p { margin: 0; color: var(--ink-dim); max-width: 70ch; }
+  svg.ic { width: 20px; height: 20px; fill: currentColor; flex: none; }
+
   main {
-    max-width: 1100px;
+    max-width: 1180px;
     margin: 0 auto;
-    padding: 18px 16px 48px;
+    padding: 20px 18px;
     display: grid;
-    grid-template-columns: minmax(300px, 1fr) auto;
-    gap: 22px;
-    align-items: start;
+    grid-template-columns: minmax(340px, 1fr) minmax(420px, 1.05fr);
+    gap: 20px;
+    height: 100vh;
+    align-items: stretch;
   }
-  @media (max-width: 860px) {
-    main { grid-template-columns: 1fr; }
-  }
-  .panel {
+  .card {
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    padding: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
-  .panel h2 {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--ink-dim);
-    margin: 0 0 12px;
-    font-weight: 600;
-  }
-  .stack { display: flex; flex-direction: column; gap: 16px; }
+  .card.left { overflow: auto; gap: 18px; }
 
-  /* ---- the Home Assistant card (Bubble-card style) ---- */
-  .bubble {
-    background: var(--panel-2);
-    border-radius: 28px;
-    padding: 14px 14px 12px;
-    border: 1px solid var(--line);
+  h1 { font-size: 24px; margin: 0; letter-spacing: -0.015em; }
+  .sub { color: var(--ink-dim); margin: 2px 0 0; font-size: 14px; }
+  .intro p { margin: 12px 0 0; color: var(--ink-dim); }
+  .intro p strong, .intro p b { color: var(--ink); font-weight: 600; }
+  h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-dim); margin: 0 0 12px; font-weight: 600;
   }
-  .bubble-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  h2 .plain { text-transform: none; letter-spacing: 0; color: #70798c; font-weight: 500; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 2px 0; }
+
+  /* ---- the Home Assistant card (Bubble Card style) ---- */
+  .bubble { background: var(--panel-2); border-radius: 30px; padding: 14px; border: 1px solid var(--line); }
+  .bubble-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .bubble-icon {
-    width: 38px; height: 38px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     background: var(--accent-dim); color: var(--accent);
     display: grid; place-items: center; flex: none;
   }
-  .bubble-name { font-weight: 600; margin-right: auto; }
+  .bubble-name { font-weight: 600; margin-right: auto; font-size: 15px; }
   .pill {
     border: 0; cursor: pointer; color: var(--ink);
-    background: rgba(255,255,255,0.07);
-    border-radius: 12px; height: 42px; padding: 0 12px;
-    display: inline-flex; align-items: center; gap: 7px;
-    font: inherit; font-size: 13px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 12px; height: 42px; padding: 0 13px;
+    display: inline-flex; align-items: center; gap: 8px;
+    font: inherit; font-size: 13.5px; white-space: nowrap;
     transition: background 0.15s, color 0.15s;
   }
-  .pill:hover { background: rgba(255,255,255,0.13); }
+  .pill:hover { background: rgba(255, 255, 255, 0.13); }
   .pill:active { transform: translateY(1px); }
   .pill.on { background: var(--accent); color: #1b1200; font-weight: 600; }
-  .pill svg { width: 18px; height: 18px; }
-  .bubble-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .bubble-row .grow { flex: 1 1 110px; justify-content: center; }
-  select.pill { appearance: none; padding-right: 28px; background-image: none; }
+  .bubble-row { display: flex; gap: 8px; }
+  .bubble-row > * { flex: 1 1 0; justify-content: center; min-width: 0; }
 
-  .conds { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* the mode dropdown, drawn the way Bubble Card draws a select sub-button */
+  .selectpill { position: relative; display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.07); border-radius: 12px; height: 42px; padding: 0 10px 0 13px; }
+  .selectpill:hover { background: rgba(255, 255, 255, 0.13); }
+  .selectpill select {
+    appearance: none; background: transparent; border: 0; color: var(--ink);
+    font: inherit; font-size: 13.5px; padding: 0; margin: 0; width: 100%;
+    cursor: pointer; outline: none;
+  }
+  .selectpill select option { background: var(--panel-2); color: var(--ink); }
+  .selectpill .chev { opacity: 0.65; margin-left: -4px; }
+
   .note { color: var(--ink-dim); font-size: 13px; margin: 10px 0 0; }
-  .note code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+  .note b { color: var(--ink); font-weight: 600; }
 
-  /* ---- state readout ---- */
+  .demo-only {
+    border: 1px dashed #3b4253; border-radius: 14px; padding: 14px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .demo-only h2 { margin-bottom: 10px; }
+  .badge {
+    display: inline-block; font-size: 10.5px; letter-spacing: 0.06em;
+    text-transform: uppercase; font-weight: 700; color: #1b1200;
+    background: var(--ink-dim); border-radius: 999px; padding: 2px 8px; vertical-align: 2px;
+  }
+  .conds { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ---- the stairs card ---- */
+  .card.right { padding: 18px 18px 16px; }
+  .right-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 14px 22px; }
+  .stage { flex: 1; min-height: 0; display: flex; gap: 14px; }
+  .matrix-frame {
+    background: #0a0c12; border: 1px solid var(--line); border-radius: 14px;
+    padding: 10px; display: flex; align-items: center;
+  }
+  canvas { display: block; height: 100%; width: auto; }
+  .ends {
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 4px 0; color: var(--ink-dim); font-size: 12px; letter-spacing: 0.04em;
+  }
+  .ends b { display: block; color: var(--ink); font-size: 13px; font-weight: 600; }
+  .readout { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
   table.state { width: 100%; border-collapse: collapse; font-size: 13px; }
-  table.state td { padding: 5px 0; border-bottom: 1px solid var(--line); }
+  table.state td { padding: 6px 0; border-bottom: 1px solid var(--line); }
   table.state tr:last-child td { border-bottom: 0; }
   table.state td:first-child { color: var(--ink-dim); }
   table.state td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
-  .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; background: rgba(255,255,255,0.08); }
-  .tag.live { background: rgba(74,222,128,0.16); color: var(--on); }
-  .tag.idle { background: rgba(255,255,255,0.08); color: var(--ink-dim); }
-
-  #log {
-    margin: 0; padding: 0; list-style: none;
-    font-size: 12.5px; max-height: 150px; overflow: auto;
-    font-variant-numeric: tabular-nums;
-  }
-  #log li { padding: 3px 0; border-bottom: 1px solid var(--line); color: var(--ink-dim); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; background: rgba(255,255,255,0.08); }
+  .tag.live { background: rgba(74, 222, 128, 0.16); color: var(--on); }
+  .tag.idle { background: rgba(255, 255, 255, 0.08); color: var(--ink-dim); }
+  .logwrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #log { margin: 0; padding: 0; list-style: none; font-size: 12.5px; overflow: auto; flex: 1; min-height: 60px; }
+  #log li { padding: 4px 0; border-bottom: 1px solid var(--line); color: var(--ink-dim); }
   #log li:first-child { color: var(--ink); }
   #log b { color: var(--accent); font-weight: 600; }
+  #log time { color: #6b7589; margin-right: 8px; font-variant-numeric: tabular-nums; }
 
-  /* ---- the stairs ---- */
-  .stairs { display: flex; gap: 14px; align-items: stretch; }
-  .stairs-frame {
-    background: #0a0c12;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 10px;
+  @media (max-width: 430px) {
+    .bubble-row { flex-wrap: wrap; }
+    .bubble-row .selectpill { flex-basis: 100%; }
   }
-  canvas { display: block; height: min(72vh, 620px); width: auto; }
-  .stairs-side {
-    display: flex; flex-direction: column; justify-content: space-between;
-    color: var(--ink-dim); font-size: 12px; padding: 10px 0;
+  @media (max-width: 920px) {
+    main { grid-template-columns: 1fr; height: auto; }
+    .card.left { overflow: visible; }
+    .stage { flex-wrap: wrap; }
+    canvas { height: min(62vh, 520px); }
+    .readout { flex-basis: 100%; }
   }
-  .stairs-side span { writing-mode: vertical-rl; text-orientation: mixed; }
-  .legend { color: var(--ink-dim); font-size: 12.5px; margin-top: 10px; text-align: center; }
-  footer { max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; color: var(--ink-dim); font-size: 13px; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>WLED Staircase — interactive demo</h1>
-  <p>
-    The Home Assistant card on the left, the stairs on the right. Everything here
-    runs the same logic as the real thing: 64 steps, 100&nbsp;ms per step, a
-    5&nbsp;second hold that starts <em>after</em> the sweep finishes.
-    <a href="https://github.com/sygad/wled-staircase">The project is on GitHub</a>.
-  </p>
-</header>
-
 <main>
-  <div class="stack">
+  <!-- ======================= LEFT: what it is, and the controls ======================= -->
+  <section class="card left">
+    <div class="intro">
+      <h1>WLED Staircase</h1>
+      <p class="sub">An interactive demo — no hardware needed.</p>
+      <p>
+        Stair lights that fill one step at a time as you walk in, hold while
+        you're on the stairs, then empty the way you came. An ESP32-S3 drives
+        64 steps as a single WS2812B matrix, and Home Assistant decides when the
+        stairs are live.
+      </p>
+      <p>
+        Everything below behaves the way the real thing does: <b>100&nbsp;ms per
+        step</b>, so a full sweep takes 6.4&nbsp;s, then a <b>5&nbsp;second
+        hold</b> that only starts once the last step has lit, then the same sweep
+        in reverse. <a href="https://github.com/sygad/wled-staircase">The project
+        is on GitHub</a>.
+      </p>
+    </div>
 
-    <div class="panel">
-      <h2>Home Assistant</h2>
+    <hr>
+
+    <div>
+      <h2>Home Assistant <span class="plain">(the Bubble Card version)</span></h2>
       <div class="bubble">
         <div class="bubble-top">
           <div class="bubble-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 20h4v-4h4v-4h4V8h4V4h2v6h-4v4h-4v4H9v4H3z"/></svg>
+            <svg class="ic" viewBox="0 0 24 24"><path d="M15,5V9H11V13H7V17H3V20H10V16H14V12H18V8H22V5H15Z"/></svg>
           </div>
           <div class="bubble-name">Staircase</div>
           <button class="pill" id="btn-moon" aria-pressed="false">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg> Moon
+            <svg class="ic" viewBox="0 0 24 24"><path d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z"/></svg>
+            Moon
           </button>
           <button class="pill on" id="btn-power" aria-pressed="true">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h-2v10h2V3zm4.8 2.2-1.4 1.4A7 7 0 1 1 7.6 6.6L6.2 5.2a9 9 0 1 0 11.6 0z"/></svg> Power
+            <svg class="ic" viewBox="0 0 24 24"><path d="M16.56,5.44L15.11,6.89C16.84,7.94 18,9.83 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12C6,9.83 7.16,7.94 8.88,6.88L7.44,5.44C5.36,6.88 4,9.28 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12C20,9.28 18.64,6.88 16.56,5.44M13,3H11V13H13"/></svg>
+            Power
           </button>
         </div>
         <div class="bubble-row">
-          <button class="pill grow" id="btn-top">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 18h16v2H4zm0-5h11v2H4zm0-5h6v2H4z"/></svg> Top
+          <button class="pill" id="btn-top">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M15 6H22V9H18V13H14V17H10V21H3V18H7V14H11V10H15V6M4.83 8.34L10.34 2.83L12.17 4.66L6.66 10.17L8.5 12H3V6.5L4.83 8.34Z"/></svg>
+            Top
           </button>
-          <button class="pill grow" id="btn-bottom">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6H4V4h16zm0 5H9V9h11zm0 5h-6v-2h6z"/></svg> Bottom
+          <button class="pill" id="btn-bottom">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M15 6H22V9H18V13H14V17H10V21H3V18H7V14H11V10H15V6M10.17 6.66L4.66 12.17L2.83 10.34L8.34 4.83L6.5 3H12V8.5L10.17 6.66Z"/></svg>
+            Bottom
           </button>
-          <select class="pill grow" id="mode" aria-label="Mode">
-            <option>Sweep</option>
-            <option>All</option>
-            <option>Rainbow</option>
-            <option>Matrix</option>
-            <option>Disco</option>
-          </select>
+          <div class="selectpill">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5,12A1.5,1.5 0 0,1 16,10.5A1.5,1.5 0 0,1 17.5,9A1.5,1.5 0 0,1 19,10.5A1.5,1.5 0 0,1 17.5,12M14.5,8A1.5,1.5 0 0,1 13,6.5A1.5,1.5 0 0,1 14.5,5A1.5,1.5 0 0,1 16,6.5A1.5,1.5 0 0,1 14.5,8M9.5,8A1.5,1.5 0 0,1 8,6.5A1.5,1.5 0 0,1 9.5,5A1.5,1.5 0 0,1 11,6.5A1.5,1.5 0 0,1 9.5,8M6.5,12A1.5,1.5 0 0,1 5,10.5A1.5,1.5 0 0,1 6.5,9A1.5,1.5 0 0,1 8,10.5A1.5,1.5 0 0,1 6.5,12M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A1.5,1.5 0 0,0 13.5,19.5C13.5,19.11 13.35,18.76 13.11,18.5C12.88,18.23 12.73,17.88 12.73,17.5A1.5,1.5 0 0,1 14.23,16H16A5,5 0 0,0 21,11C21,6.58 16.97,3 12,3Z"/></svg>
+            <select id="mode" aria-label="Mode">
+              <option>Sweep</option>
+              <option>All</option>
+              <option>Rainbow</option>
+              <option>Matrix</option>
+              <option>Disco</option>
+            </select>
+            <svg class="ic chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7,10L12,15L17,10H7Z"/></svg>
+          </div>
         </div>
       </div>
       <p class="note">
-        Top and Bottom select the <code>zz Trigger</code> presets — exactly what a
-        PIR or a push button does.
+        <b>Top</b> and <b>Bottom</b> start a sweep from that end of the stairs —
+        the same thing the push button or the motion sensor there does.
+        <b>Moon</b> forces night mode on: the stairs normally only run between
+        sunset and sunrise, and Moon keeps them live when the sun is up. It stays
+        on until you switch it off. <b>Power</b> is the master switch.
       </p>
     </div>
 
-    <div class="panel">
-      <h2>Conditions</h2>
+    <div class="demo-only">
+      <h2>Demo controls <span class="badge">not in Home Assistant</span></h2>
       <div class="conds">
-        <button class="pill on" id="btn-night" aria-pressed="true">Night</button>
-        <button class="pill" id="btn-armed" aria-pressed="false">Alarm armed home</button>
-        <button class="pill" id="btn-speed">Speed: 1×</button>
+        <button class="pill on" id="btn-night" aria-pressed="true">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M3.55 19.09L4.96 20.5L6.76 18.71L5.34 17.29M12 6C8.69 6 6 8.69 6 12S8.69 18 12 18 18 15.31 18 12C18 8.68 15.31 6 12 6M20 13H23V11H20M17.24 18.71L19.04 20.5L20.45 19.09L18.66 17.29M20.45 5L19.04 3.6L17.24 5.39L18.66 6.81M13 1H11V4H13M6.76 5.39L4.96 3.6L3.55 5L5.34 6.81L6.76 5.39M1 13H4V11H1M13 20H11V23H13"/></svg>
+          After sunset
+        </button>
+        <button class="pill" id="btn-armed" aria-pressed="false">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M11,13H13V16H16V11H18L12,6L6,11H8V16H11V13M12,1L21,5V11C21,16.55 17.16,21.74 12,23C6.84,21.74 3,16.55 3,11V5L12,1Z"/></svg>
+          Alarm armed home
+        </button>
       </div>
       <p class="note">
-        The stairs are live only when <b>Power</b> is on and it's <b>Night</b> (or
-        <b>Moon</b> is on). With the alarm <b>armed home</b>, the top sensor goes
-        to Danger instead of a sweep.
+        These two aren't buttons you'd ever press. In the real system they are
+        things the house already knows: <b>after sunset</b> comes from
+        <code>sun.sun</code>, which Home Assistant works out from your location,
+        and <b>armed home</b> comes from your alarm panel. They're here so you can
+        move time and set the alarm without waiting for either.
       </p>
     </div>
+  </section>
 
-    <div class="panel">
-      <h2>Controller state</h2>
-      <table class="state">
-        <tr><td>Preset</td><td id="s-preset">Stairs Sweep</td></tr>
-        <tr><td>Staircase logic</td><td id="s-usermod"><span class="tag live">on</span></td></tr>
-        <tr><td>Master power</td><td id="s-master"><span class="tag idle">off</span></td></tr>
-        <tr><td>Steps lit</td><td id="s-lit">0 / 64</td></tr>
-      </table>
+  <!-- ======================= RIGHT: the stairs, and what they're doing ======================= -->
+  <section class="card right">
+    <div class="right-head">
+      <h2 style="margin:0">8 × 64 matrix <span class="plain">— one row per step</span></h2>
     </div>
 
-    <div class="panel">
-      <h2>What just happened</h2>
-      <ul id="log"></ul>
-    </div>
-
-  </div>
-
-  <div class="panel">
-    <h2>8 × 64 matrix — one row per step</h2>
-    <div class="stairs">
-      <div class="stairs-side">
-        <span>top of the stairs</span>
-        <span>bottom</span>
-      </div>
-      <div class="stairs-frame">
+    <div class="stage">
+      <div class="matrix-frame">
         <canvas id="stairs" width="160" height="1280" aria-label="A simulated 8 by 64 LED matrix"></canvas>
       </div>
-    </div>
-    <p class="legend">512 WS2812B LEDs · 64 rows of 8 · first LED bottom-left</p>
-  </div>
-</main>
 
-<footer>
-  A simulation, not a video: the timings, the sweep direction rules and the
-  preset behaviour are the ones in the firmware.
-  <a href="https://github.com/sygad/wled-staircase/blob/main/parts/04-behaviour-patches/README.md">How the patches work →</a>
-</footer>
+      <div class="ends">
+        <span><b>Top</b>step 64</span>
+        <span><b>Bottom</b>step 1</span>
+      </div>
+
+      <div class="readout">
+        <div>
+          <h2>What the controller is doing</h2>
+          <table class="state">
+            <tr><td>Preset</td><td id="s-preset">Stairs Sweep</td></tr>
+            <tr><td>Staircase logic</td><td id="s-usermod"><span class="tag live">on</span></td></tr>
+            <tr><td>Master power</td><td id="s-master"><span class="tag idle">off</span></td></tr>
+            <tr><td>Steps lit</td><td id="s-lit">0 / 64</td></tr>
+          </table>
+        </div>
+        <div class="logwrap">
+          <h2>What just happened</h2>
+          <ul id="log"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
 
 <script>
 (function () {
@@ -251,11 +298,10 @@
 
   var canvas = document.getElementById("stairs");
   var ctx = canvas.getContext("2d");
-  var CELL = canvas.width / COLS;          // 20px per LED in the backing store
+  var CELL = canvas.width / COLS;
 
-  // ---- Home Assistant side -------------------------------------------------
+  // ---- the Home Assistant side --------------------------------------------
   var ha = { power: true, moon: false, night: true, armed: false, mode: "Sweep" };
-  var speed = 1;
 
   function active() { return ha.power && (ha.night || ha.moon); }
 
@@ -266,11 +312,11 @@
       preset("Stairs Off", reason || "Power off");
       return;
     }
-    if (!active()) { preset("Stairs Off", reason || "Daylight, Moon off"); return; }
+    if (!active()) { preset("Stairs Off", reason || "Daylight, and Moon is off"); return; }
     preset("Stairs " + ha.mode, reason || ha.mode + " selected");
   }
 
-  // ---- controller side -----------------------------------------------------
+  // ---- the controller side -------------------------------------------------
   // rows[r] is row r counted from the BOTTOM of the stairs
   var rows = new Array(ROWS);
   var fw = {
@@ -278,21 +324,17 @@
     usermod: true,       // is the staircase logic running?
     master: false,       // WLED master power
     effect: null,        // "matrix" | "disco" | null
-    base: WARM,          // row colour source for sweeps
+    base: WARM,
     rainbow: false,
     phase: "idle",       // idle | on | hold | off
-    dir: "bottom",       // the direction of the trigger that started it
-    k: 0,                // steps completed in this phase
-    at: 0,               // timestamp the phase/step clock last moved
+    dir: "bottom",
+    k: 0,
+    at: 0,
     whole: false         // "All": every step together
   };
-  var dangerUntil = 0, dangerReturn = null;
+  var dangerUntil = 0;
 
-  function rowColour(r) {
-    if (!fw.rainbow) return fw.base;
-    return hsv((r / (ROWS - 1)) * 0.75, 1, 1);
-  }
-
+  function rowColour(r) { return fw.rainbow ? hsv((r / (ROWS - 1)) * 0.75, 1, 1) : fw.base; }
   function clearRows() { for (var r = 0; r < ROWS; r++) rows[r] = null; }
 
   function preset(name, why) {
@@ -300,30 +342,29 @@
     fw.phase = "idle"; fw.k = 0; fw.effect = null;
     fw.rainbow = false; fw.whole = false; fw.base = WARM;
     clearRows();
-    if (name === "Stairs Sweep")   { fw.usermod = true;  fw.master = false; }
+    if (name === "Stairs Sweep") { fw.usermod = true; fw.master = false; }
     else if (name === "Stairs Rainbow") { fw.usermod = true; fw.master = false; fw.rainbow = true; }
-    else if (name === "Stairs All")     { fw.usermod = true; fw.master = false; fw.whole = true; }
-    else if (name === "Stairs Matrix")  { fw.usermod = false; fw.master = true; fw.effect = "matrix"; }
-    else if (name === "Stairs Disco")   { fw.usermod = false; fw.master = true; fw.effect = "disco"; }
-    else if (name === "Stairs Danger")  { fw.usermod = false; fw.master = true; fw.base = RED;
-                                          for (var r = 0; r < ROWS; r++) rows[r] = RED; }
-    else { fw.usermod = false; fw.master = false; }   // Stairs Off
+    else if (name === "Stairs All") { fw.usermod = true; fw.master = false; fw.whole = true; }
+    else if (name === "Stairs Matrix") { fw.usermod = false; fw.master = true; fw.effect = "matrix"; }
+    else if (name === "Stairs Disco") { fw.usermod = false; fw.master = true; fw.effect = "disco"; }
+    else if (name === "Stairs Danger") {
+      fw.usermod = false; fw.master = true; fw.base = RED;
+      for (var r = 0; r < ROWS; r++) rows[r] = RED;
+    } else { fw.usermod = false; fw.master = false; }   // Stairs Off
     log(why ? why + " → <b>" + name + "</b>" : "<b>" + name + "</b>");
   }
 
-  // A trigger: the button, the PIR, or the zz Trigger preset. All the same thing.
+  // A trigger: the push button, the motion sensor, or the card's Top / Bottom.
   function trigger(dir, source) {
-    if (ha.armed && dir === "top" && active() && ha.power) {
-      // the Danger automation takes this one instead of the sweep
-      dangerReturn = fw.preset;
-      preset("Stairs Danger", source + " while armed home");
+    if (ha.armed && dir === "top" && active()) {
+      preset("Stairs Danger", source + " while the alarm is armed home");
       dangerUntil = performance.now() + DANGER_MS;
       return;
     }
-    if (!fw.usermod) { log(source + " ignored — staircase logic is off in this mode"); return; }
-    if (fw.phase === "on" || fw.phase === "hold" || fw.phase === "off") {
-      if (dir !== fw.dir) { log(source + " ignored — a sweep from the " + fw.dir + " is already running (P5)"); return; }
-      if (fw.phase === "hold") { fw.at = performance.now(); log(source + " — hold restarted (P5)"); return; }
+    if (!fw.usermod) { log(source + " ignored — the staircase logic is off in this mode"); return; }
+    if (fw.phase !== "idle") {
+      if (dir !== fw.dir) { log(source + " ignored — a sweep from the " + fw.dir + " is already running"); return; }
+      if (fw.phase === "hold") { fw.at = performance.now(); log(source + " — hold restarted"); return; }
       if (fw.phase === "off") { fw.phase = "on"; fw.at = performance.now(); log(source + " — filling again"); return; }
       log(source + " — already sweeping");
       return;
@@ -336,67 +377,60 @@
     log(source + " → sweep from the <b>" + dir + "</b>");
   }
 
-  // order in which rows light, for the current direction
   function rowAt(i) { return fw.dir === "bottom" ? i : ROWS - 1 - i; }
 
   function tick(now) {
     if (dangerUntil && now > dangerUntil) {
       dangerUntil = 0;
       applyState("Danger finished");
-      dangerReturn = null;
     }
 
-    var step = STEP_MS / speed;
-
     if (fw.phase === "on") {
-      if (fw.whole) {                       // "All": every step at once
+      if (fw.whole) {
         for (var r = 0; r < ROWS; r++) rows[r] = rowColour(r);
         fw.phase = "hold"; fw.at = now;
       } else {
-        while (fw.k < ROWS && now - fw.at >= step) {
+        while (fw.k < ROWS && now - fw.at >= STEP_MS) {
           rows[rowAt(fw.k)] = rowColour(rowAt(fw.k));
           fw.k++;
-          fw.at += step;
+          fw.at += STEP_MS;
         }
-        if (fw.k >= ROWS) { fw.phase = "hold"; fw.at = now; }   // P3: the hold starts here
+        if (fw.k >= ROWS) { fw.phase = "hold"; fw.at = now; }   // the hold starts here
       }
     } else if (fw.phase === "hold") {
-      if (now - fw.at >= ON_TIME_MS / speed) { fw.phase = "off"; fw.k = 0; fw.at = now; }
+      if (now - fw.at >= ON_TIME_MS) { fw.phase = "off"; fw.k = 0; fw.at = now; }
     } else if (fw.phase === "off") {
       if (fw.whole) {
-        clearRows();
-        fw.phase = "idle"; fw.master = false;
+        clearRows(); fw.phase = "idle"; fw.master = false;
       } else {
-        while (fw.k < ROWS && now - fw.at >= step) {
-          rows[rowAt(fw.k)] = null;         // P2: empties the way it filled
+        while (fw.k < ROWS && now - fw.at >= STEP_MS) {
+          rows[rowAt(fw.k)] = null;         // empties the way it filled
           fw.k++;
-          fw.at += step;
+          fw.at += STEP_MS;
         }
         if (fw.k >= ROWS) { fw.phase = "idle"; fw.master = false; }
       }
     }
 
-    if (fw.effect === "matrix") matrixEffect(now);
+    if (fw.effect === "matrix") matrixEffect();
     if (fw.effect === "disco") discoEffect(now);
   }
 
   // ---- the two continuous effects -----------------------------------------
-  var drops = [];
-  function matrixEffect(now) {
+  var drops = [], matrixGrid = null;
+  function matrixEffect() {
     if (!drops.length) {
       for (var c = 0; c < COLS; c++) drops.push({ y: Math.random() * ROWS, v: 12 + Math.random() * 18 });
     }
-    clearRows();
     var grid = [];
     for (var c2 = 0; c2 < COLS; c2++) {
       var d = drops[c2];
-      d.y += (d.v * 0.016) * speed;
+      d.y += d.v * 0.016;
       if (d.y - 14 > ROWS) { d.y = -Math.random() * 20; d.v = 12 + Math.random() * 18; }
       grid.push(d.y);
     }
     matrixGrid = grid;
   }
-  var matrixGrid = null;
 
   var bars = new Array(COLS).fill(0);
   function discoEffect(now) {
@@ -415,19 +449,13 @@
         var col = null;
         if (fw.master) {
           if (fw.effect === "matrix" && matrixGrid) {
-            var head = matrixGrid[c];                 // falls from the top
-            var rowFromTop = ROWS - 1 - r;
-            var dist = head - rowFromTop;
+            var dist = matrixGrid[c] - (ROWS - 1 - r);     // falls from the top
             if (dist >= 0 && dist < 14) {
               var k = 1 - dist / 14;
               col = dist < 1 ? [170, 255, 170] : [0, Math.round(40 + 180 * k), 0];
             }
           } else if (fw.effect === "disco") {
-            var h = bars[c] * ROWS;
-            if (r < h) {
-              var f = r / ROWS;
-              col = palette(f / 0.78);
-            }
+            if (r < bars[c] * ROWS) col = palette((r / ROWS) / 0.78);
           } else {
             col = rows[r];
           }
@@ -490,19 +518,19 @@
     document.getElementById("s-master").innerHTML =
       '<span class="tag ' + (fw.master ? "live" : "idle") + '">' + (fw.master ? "on" : "off") + "</span>";
     var lit = 0;
-    if (fw.master && !fw.effect) { for (var r = 0; r < ROWS; r++) if (rows[r]) lit++; }
-    else if (fw.master && fw.effect) lit = ROWS;
+    if (fw.master && fw.effect) lit = ROWS;
+    else if (fw.master) { for (var r = 0; r < ROWS; r++) if (rows[r]) lit++; }
     document.getElementById("s-lit").textContent = lit + " / " + ROWS;
   }
 
   var logEl = document.getElementById("log");
   function log(html) {
-    var li = document.createElement("li");
-    var t = new Date();
-    li.innerHTML = "<span>" + String(t.getMinutes()).padStart(2, "0") + ":" +
-      String(t.getSeconds()).padStart(2, "0") + "</span> &nbsp;" + html;
+    var li = document.createElement("li"), t = new Date();
+    li.innerHTML = "<time>" + String(t.getHours()).padStart(2, "0") + ":" +
+      String(t.getMinutes()).padStart(2, "0") + ":" + String(t.getSeconds()).padStart(2, "0") +
+      "</time>" + html;
     logEl.prepend(li);
-    while (logEl.children.length > 30) logEl.lastChild.remove();
+    while (logEl.children.length > 40) logEl.lastChild.remove();
   }
 
   // ---- wiring --------------------------------------------------------------
@@ -517,24 +545,22 @@
   }
 
   toggleButton("btn-power", "power", function () { applyState(ha.power ? "Power on" : "Power off"); });
-  toggleButton("btn-moon", "moon", function () { applyState("Moon " + (ha.moon ? "on" : "off")); });
-  toggleButton("btn-night", "night", function () { applyState(ha.night ? "Sun below horizon" : "Daylight"); });
+  toggleButton("btn-moon", "moon", function () {
+    applyState(ha.moon ? "Moon on — night mode forced" : "Moon off");
+  });
+  toggleButton("btn-night", "night", function () {
+    applyState(ha.night ? "The sun has set" : "The sun is up");
+  });
   toggleButton("btn-armed", "armed", function () {
-    log("Alarm " + (ha.armed ? "armed home — the top sensor now means Danger" : "disarmed"));
+    log(ha.armed ? "Alarm armed home — the top sensor now means Danger" : "Alarm disarmed");
   });
 
   document.getElementById("mode").addEventListener("change", function (e) {
     ha.mode = e.target.value;
     applyState("Mode → " + ha.mode);
   });
-  document.getElementById("btn-bottom").addEventListener("click", function () { trigger("bottom", "Bottom trigger"); });
-  document.getElementById("btn-top").addEventListener("click", function () { trigger("top", "Top trigger"); });
-
-  var speeds = [1, 2, 4];
-  document.getElementById("btn-speed").addEventListener("click", function () {
-    speed = speeds[(speeds.indexOf(speed) + 1) % speeds.length];
-    this.textContent = "Speed: " + speed + "×";
-  });
+  document.getElementById("btn-bottom").addEventListener("click", function () { trigger("bottom", "Bottom"); });
+  document.getElementById("btn-top").addEventListener("click", function () { trigger("top", "Top"); });
 
   // ---- go ------------------------------------------------------------------
   clearRows();
