@@ -104,7 +104,7 @@
     color: transparent; font: inherit; padding: 0; margin: 0;
     opacity: 0; cursor: pointer; outline: none;
   }
-  .selectpill select:focus-visible { opacity: 1; color: var(--ink); }
+  .selectpill:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
   .selectpill select option { background: var(--panel-2); color: var(--ink); }
   .selectpill .value { flex: 1; min-width: max-content; white-space: nowrap; }
   .selectpill .chev { opacity: 0.65; }
@@ -131,12 +131,11 @@
   .conds { display: flex; gap: 10px; flex-wrap: wrap; }
 
   /* ---- the stairs card ---- */
-  .card.right { padding: 26px 26px 22px; }
-  .right-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 20px 26px; }
-  .stage { flex: 1; min-height: 0; display: flex; gap: 18px; }
+  .card.right { padding: 22px 26px; }
+  .stage { flex: 1; min-height: 0; display: flex; gap: 16px; }
   .matrix-frame {
     background: #0a0c12; border: 1px solid var(--line); border-radius: 14px;
-    padding: 10px; display: flex; align-items: center;
+    padding: 10px; display: flex; align-items: stretch;
   }
   canvas { display: block; height: 100%; width: auto; }
   .ends {
@@ -144,7 +143,10 @@
     padding: 6px 0; color: var(--ink-faint);
   }
   .ends b { display: block; color: var(--ink); font-weight: 600; }
-  .readout { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 42px; min-height: 0; }
+  .readout {
+    flex: 1; min-width: 0; min-height: 0; margin-left: 26px;
+    display: flex; flex-direction: column; gap: 42px;
+  }
   table.state { width: 100%; border-collapse: collapse; }
   table.state td { padding: 11px 0; border-bottom: 1px solid var(--line); }
   table.state tr:last-child td { border-bottom: 0; }
@@ -173,7 +175,7 @@
     .card.right { position: static; height: auto; }
     .stage { flex-wrap: wrap; }
     canvas { height: min(62vh, 520px); }
-    .readout { flex-basis: 100%; gap: 32px; }
+    .readout { flex-basis: 100%; gap: 32px; margin-left: 0; margin-top: 28px; }
   }
 </style>
 </head>
@@ -276,10 +278,6 @@
 
   <!-- ======================= RIGHT: the stairs, and what they're doing ======================= -->
   <section class="card right">
-    <div class="right-head">
-      <h2 style="margin:0">8 × 64 matrix <span class="plain">— one row per step</span></h2>
-    </div>
-
     <div class="stage">
       <div class="matrix-frame">
         <canvas id="stairs" width="160" height="1280" aria-label="A simulated 8 by 64 LED matrix"></canvas>
