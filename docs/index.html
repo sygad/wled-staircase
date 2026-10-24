@@ -62,7 +62,6 @@
     font-size: 16px; color: var(--ink); margin: 0 0 20px; font-weight: 600;
     letter-spacing: -0.005em;
   }
-  h2 .plain { color: var(--ink-faint); font-weight: 400; }
   hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
 
   /* ---- the Home Assistant card (Bubble Card style) ---- */
@@ -133,13 +132,7 @@
     background: rgba(255, 255, 255, 0.02);
     margin: 6px 0;
   }
-  .demo-only h2 { margin-bottom: 20px; }
   .demo-only .note { margin-top: 22px; }
-  .badge {
-    display: inline-block; font-weight: 500; color: var(--ink-dim);
-    background: rgba(255, 255, 255, 0.07); border: 1px solid var(--line);
-    border-radius: 999px; padding: 2px 12px; margin-left: 6px;
-  }
   .conds { display: flex; gap: 10px; flex-wrap: wrap; }
 
   /* ---- the stairs card ---- */
@@ -208,7 +201,6 @@
     <hr>
 
     <div>
-      <h2>Home Assistant <span class="plain">(the Bubble Card version)</span></h2>
       <div class="bubble">
         <div class="bubble-top">
           <div class="bubble-icon" aria-hidden="true">
@@ -257,7 +249,6 @@
     </div>
 
     <div class="demo-only">
-      <h2>Alarm <span class="badge">not in Home Assistant</span></h2>
       <div class="conds">
         <button class="pill" id="btn-armed" aria-pressed="false">
           <svg class="ic" viewBox="0 0 24 24"><path d="M11,13H13V16H16V11H18L12,6L6,11H8V16H11V13M12,1L21,5V11C21,16.55 17.16,21.74 12,23C6.84,21.74 3,16.55 3,11V5L12,1Z"/></svg>
