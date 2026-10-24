@@ -326,9 +326,11 @@
   //   spawning rate 36 -> a new drop starts on (36 + 1) / 256 of steps
   //   trail 26   -> fadeToBlackBy(30 + 26/255 * 220), i.e. each pixel keeps
   //                 79.4% of its brightness per step, so a trail reads ~10 rows
-  // Custom colour is off, so the effect uses its own spawn and trail colours.
+  //   custom colour on, head 0,255,0 and trail 0,170,0. The controller applies
+  //   a 2.2 gamma to those, so the trail lands at 0,105,0 on the LEDs — which
+  //   is what these values are, since the browser does no such thing.
   var MX_STEP_MS = 64, MX_SPAWN = (36 + 1) / 256, MX_KEEP = 1 - (30 + 26 / 255 * 220) / 255;
-  var MX_HEAD = [175, 255, 175], MX_TRAIL = [27, 130, 39];
+  var MX_HEAD = [0, 255, 0], MX_TRAIL = [0, 105, 0];
 
   var canvas = document.getElementById("stairs");
   var ctx = canvas.getContext("2d");

@@ -57,11 +57,13 @@ def presets(rows, width, bri):
                                "staircase": {"enabled": True}}),
         # Matrix: speed 128 = 64 ms per row, spawning rate 36 puts about nine
         # drops on the stairs at once, trail 26 is a slow fade so each one
-        # reads about ten steps long. Custom colour off: the effect's own
-        # bright head and green trail look better than flat dark green.
+        # reads about ten steps long. Custom colour ON with pure greens: the
+        # effect's own colours are a near-white head and a red-and-blue-tinted
+        # trail. These are gamma-corrected on the way out, so the trail lands
+        # at about (0, 105, 0) on the LEDs.
         4: ("Stairs Matrix",  {"tt": 0, "on": True, "bri": bri,
-                               "seg": f({"fx": MATRIX_FX, "sx": 128, "ix": 36, "c1": 26, "o1": False,
-                                         "col": [[0, 140, 0], [0, 40, 0], [0, 0, 0]]}),
+                               "seg": f({"fx": MATRIX_FX, "sx": 128, "ix": 36, "c1": 26, "o1": True,
+                                         "col": [[0, 255, 0], [0, 170, 0], [0, 0, 0]]}),
                                "staircase": {"enabled": False}}),
         5: ("Stairs Disco",   {"tt": 0, "on": True, "bri": bri,
                                "seg": f({"fx": GEQ_FX, "o1": False, "pal": CUSTOM_PALETTE_0, "c1": 255}),

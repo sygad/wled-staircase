@@ -69,10 +69,19 @@ two of them are easy to read backwards:
 | Speed | **128** | The firmware turns this into `(256 - speed) >> 1` = **64 ms per row**, so a drop takes about 4 s to fall 64 steps |
 | Spawning rate | **36** | A new drop starts on `(36 + 1) / 256` of steps — about **nine drops** on the stairs at once. The default 128 puts thirty-odd up there, which on a tall matrix is a solid green wall |
 | Trail | **26** | Counter-intuitive: it maps to a *fade* amount, so a **lower** number means a **longer** trail. 26 keeps 79% of each pixel's brightness per step, which reads as roughly **ten steps** of tail |
-| Custom colour | **off** | With it on, the effect uses the segment colours and you get a flat dark-green rain. Off, it uses its own near-white head and mid-green trail — the classic look |
+| Custom colour | **on**, head `0,255,0`, trail `0,170,0` | Pure greens, no red or blue. Switched off, the effect uses its own colours — a `175,255,175` head that reads as white on a staircase, and a `27,130,39` trail with red and blue in it that looks washed out |
 
-The [demo](https://sygad.github.io/wled-staircase/) runs that same arithmetic, so
-what you see there is what the stairs do.
+**The two colour paths are not gamma-equivalent**, which is worth knowing before
+you pick values. The effect's built-in colours are gamma-*inverted* in the
+firmware so they appear exactly as written. Your own colours are not: the
+controller's 2.2 gamma is applied on the way out, so they land darker than the
+number suggests. `0,170,0` displays as about `0,105,0`, and an obvious-looking
+`0,140,0` trail displays as `0,65,0` — which is why a first attempt at dark
+green looks like it has no trail at all.
+
+The [demo](https://sygad.github.io/wled-staircase/) runs that same arithmetic
+and draws the gamma-corrected colours, so what you see there is what the stairs
+do.
 
 **Disco needs a palette file.** `pal: 200` is WLED's first *custom* palette slot
 (custom palette IDs count down from 200), which means
