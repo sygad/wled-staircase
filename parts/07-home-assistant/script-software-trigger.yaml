@@ -5,7 +5,7 @@
 # Search this file for CHANGE and swap in your own entity IDs.
 #
 # Why this exists rather than the cards calling the preset directly: the three
-# trigger paths are gated differently. The wall buttons always work, the motion
+# trigger paths are gated differently. The hardware buttons always work, the motion
 # sensors obey the house motion toggle, and these card buttons sit in between —
 # they only exist while Home Assistant is up, so they respect Power and the
 # day/night window, but NOT the motion toggle, which is about motion only.
@@ -14,7 +14,7 @@ alias: Staircase v2 – Software trigger
 description: >-
   Gate for the dashboard Top/Bottom buttons. Respects Power and the day/night
   window (overridable with Moon). Deliberately does not check the house motion
-  toggle: that gates the motion sensors only. The wall buttons on the controller
+  toggle: that gates the motion sensors only. The hardware buttons on the controller
   bypass Home Assistant entirely and always work.
 mode: queued
 max: 4

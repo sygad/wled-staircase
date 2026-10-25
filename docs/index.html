@@ -207,9 +207,9 @@
     <div class="intro">
       <h1>WLED Staircase - Interactive Demo</h1>
       <p>
-        Everything in this demo behaves the way the real thing does. It is
-        designed to work at night only — override by pressing the <b>Moon</b>
-        button to force it into night-time mode.
+        Everything in this demo behaves the way the real thing does. The stair
+        sensors run at night only — press <b>Moon</b> to force night-time mode.
+        Matrix, Disco, Danger and the hardware button ignore that window.
       </p>
     </div>
 
@@ -256,24 +256,41 @@
       </div>
       <h2 class="sub-h">Instructions</h2>
       <ul class="steps">
-        <li>Press the <b>Top</b> / <b>Bottom</b> buttons to simulate walking up or down the stairs.</li>
-        <li><b>Sweep</b> and <b>Rainbow</b> presets are direction aware.</li>
-        <li><b>All</b> turns on every step at once, in either direction.</li>
-        <li><b>Matrix</b> and <b>Disco</b> are just for fun.</li>
+        <li>The <b>stair sensors</b> below are how the stairs are really used — walking up or down.</li>
+        <li>The card's <b>Top</b> / <b>Bottom</b> buttons do the same thing from your phone.</li>
+        <li>The <b>hardware button</b> is a diagnostic on the controller itself. It ignores every condition.</li>
+        <li><b>Sweep</b> and <b>Rainbow</b> are direction aware; <b>All</b> lights every step at once.</li>
+        <li><b>Matrix</b> and <b>Disco</b> are just for fun, and run day or night.</li>
       </ul>
     </div>
 
     <div class="demo-only">
       <div class="conds">
+        <button class="pill" id="btn-pir-top">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M12,2A3,3 0 0,1 15,5A3,3 0 0,1 12,8A3,3 0 0,1 9,5A3,3 0 0,1 12,2M12,9C13.1,9 14,9.9 14,11V22H10V11C10,9.9 10.9,9 12,9M7.5,10.5A1.5,1.5 0 0,1 9,12A1.5,1.5 0 0,1 7.5,13.5A1.5,1.5 0 0,1 6,12A1.5,1.5 0 0,1 7.5,10.5M16.5,10.5A1.5,1.5 0 0,1 18,12A1.5,1.5 0 0,1 16.5,13.5A1.5,1.5 0 0,1 15,12A1.5,1.5 0 0,1 16.5,10.5Z"/></svg>
+          Top sensor
+        </button>
+        <button class="pill" id="btn-pir-bottom">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M12,2A3,3 0 0,1 15,5A3,3 0 0,1 12,8A3,3 0 0,1 9,5A3,3 0 0,1 12,2M12,9C13.1,9 14,9.9 14,11V22H10V11C10,9.9 10.9,9 12,9M7.5,10.5A1.5,1.5 0 0,1 9,12A1.5,1.5 0 0,1 7.5,13.5A1.5,1.5 0 0,1 6,12A1.5,1.5 0 0,1 7.5,10.5M16.5,10.5A1.5,1.5 0 0,1 18,12A1.5,1.5 0 0,1 16.5,13.5A1.5,1.5 0 0,1 15,12A1.5,1.5 0 0,1 16.5,10.5Z"/></svg>
+          Bottom sensor
+        </button>
         <button class="pill" id="btn-armed" aria-pressed="false">
           <svg class="ic" viewBox="0 0 24 24"><path d="M11,13H13V16H16V11H18L12,6L6,11H8V16H11V13M12,1L21,5V11C21,16.55 17.16,21.74 12,23C6.84,21.74 3,16.55 3,11V5L12,1Z"/></svg>
           Alarm armed house
         </button>
+        <button class="pill" id="btn-hw">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6Z"/></svg>
+          Hardware button
+        </button>
       </div>
       <p class="note">
-        Press <b>Alarm armed house</b> to simulate the downstairs floor being
-        armed, then press <b>Top</b> to see the stairs light up, warning you
-        that downstairs is armed.
+        The <b>stair sensors</b> are the real interface: they obey Power and the
+        day/night window, so in daylight press <b>Moon</b> first. Press
+        <b>Alarm armed house</b> and then <b>Top sensor</b> for the red Danger
+        warning — that one works day or night, because an alarm armed in the
+        afternoon has to warn you in the afternoon. The <b>hardware button</b> is
+        on the controller, locked away, and ignores all of it: it exists to prove
+        the LEDs work when nothing else can be trusted.
       </p>
     </div>
 
@@ -435,7 +452,7 @@
       for (var r = 0; r < ROWS; r++) rows[r] = RED;
       fw.fade = { from: 0, to: 1, start: performance.now(), dur: DANGER_IN_MS };
     } else {   // Stairs Off: parks the strip, but the staircase logic stays ON so
-               // the wall buttons keep working. It carries the row layout in warm
+               // the hardware buttons keep working. It carries the row layout in warm
                // white as well, which is what rebuilds the rows after All, Matrix,
                // Disco or Danger collapsed them into one segment. So it resets to
                // the Sweep look, whichever mode is selected: the resets above are
@@ -445,16 +462,25 @@
     log(why ? why + " → <b>" + name + "</b>" : "<b>" + name + "</b>");
   }
 
-  // A trigger: the push button, the motion sensor, or the card's Top / Bottom.
-  function trigger(dir, source) {
-    if (ha.armed && dir === "top" && active()) {
+  // A trigger. The three ways in are gated differently, so `path` decides which
+  // gate applies: "sensor" is a stair PIR, "card" is the bubble card's Top /
+  // Bottom, "hardware" is a button on the controller itself.
+  function trigger(dir, source, path) {
+    // Danger belongs to the top PIR alone, and it outranks everything except
+    // Power: the alarm can be armed in the afternoon as easily as at midnight.
+    if (path === "sensor" && dir === "top" && ha.armed && ha.power) {
       preset("Stairs Danger", source + " while the house alarm is armed");
       dangerUntil = performance.now() + DANGER_MS;
       return;
     }
-    if (!active()) {
-      log(source + " ignored — the stairs only run at night. Press <b>Moon</b> to force night mode");
-      return;
+    // The hardware buttons are a diagnostic and skip every gate — not the hour,
+    // not the alarm, not Power, not Home Assistant. They answer one question:
+    // are the controller and the LEDs working?
+    if (path !== "hardware") {
+      if (!active()) {
+        log(source + " ignored — the stairs only run at night. Press <b>Moon</b> to force night mode");
+        return;
+      }
     }
     if (!fw.usermod) { log(source + " ignored — the staircase logic is off in this mode"); return; }
     if (fw.phase !== "idle") {
@@ -698,8 +724,11 @@
     setMode(e.target.value);
     applyState("Mode → " + ha.mode);
   });
-  document.getElementById("btn-bottom").addEventListener("click", function () { trigger("bottom", "Bottom"); });
-  document.getElementById("btn-top").addEventListener("click", function () { trigger("top", "Top"); });
+  document.getElementById("btn-bottom").addEventListener("click", function () { trigger("bottom", "Card Bottom", "card"); });
+  document.getElementById("btn-top").addEventListener("click", function () { trigger("top", "Card Top", "card"); });
+  document.getElementById("btn-pir-bottom").addEventListener("click", function () { trigger("bottom", "Bottom sensor", "sensor"); });
+  document.getElementById("btn-pir-top").addEventListener("click", function () { trigger("top", "Top sensor", "sensor"); });
+  document.getElementById("btn-hw").addEventListener("click", function () { trigger("bottom", "Hardware button", "hardware"); });
 
   // ---- go ------------------------------------------------------------------
   clearRows();

@@ -125,17 +125,22 @@ explained once in **[shared/README.md](shared/README.md)**.
 | **Matrix** | 2D green rain, falling top to bottom, continuously |
 | **Disco** | 2D graphic-equaliser bars rising from the bottom (sound-reactive once a microphone is fitted) |
 | **Danger** | Not a mode you pick: a top sensor while the alarm is armed fades everything up red over 0.2 s, holds five seconds, fades away over 0.5 s, then puts the previous mode back |
-| **Off** | Dark — but the wall buttons still work |
+| **Off** | Dark — but the hardware buttons still work |
 
 **When it runs.** These are lights for the dark: Home Assistant only lets the
-stairs light between sunset and sunrise, worked out from `sun.sun` rather than a
-clock, so it tracks the seasons on its own. The **Moon** toggle forces night mode
-on when you want them live anyway — a gloomy afternoon, or showing somebody — and
-latches until you turn it off. **Power** is the master switch above both.
+**motion sensors** light the stairs between sunset and sunrise, worked out from
+`sun.sun` rather than a clock, so it tracks the seasons on its own. The **Moon**
+toggle forces night mode on when you want them live anyway — a gloomy afternoon,
+or showing somebody — and latches until you turn it off. **Power** is the master
+switch above both.
 
-The buttons at the top and bottom of the stairs are wired straight to the
-controller, so **the stairs work with Home Assistant switched off** — and after a
-power cut it comes back as Sweep on its own.
+Three things sit outside that window. **Matrix** and **Disco** run from the moment
+you select them, day or night. **Danger** answers to the alarm alone, because an
+alarm armed in the afternoon has to warn you in the afternoon. And the two
+**hardware buttons** on the controller are a diagnostic — wired straight to the
+GPIO, gated by nothing at all, so **they work with Home Assistant switched off**,
+with Zigbee down, and in broad daylight. After a power cut the controller comes
+back as Sweep on its own.
 
 ---
 
@@ -235,7 +240,7 @@ with the pre-built firmware.
 | `light.wled_staircase` | your WLED device's main light | " |
 | `binary_sensor.staircase_*_pir_occupancy` | your two occupancy sensors | " |
 | `alarm_control_panel.home_alarm` | your alarm panel, or delete Danger | " |
-| `input_boolean.motion_sensors` | your own master motion toggle, or delete the two conditions (PIR and Danger only) | " |
+| `input_boolean.motion_sensors` | your own master motion toggle, or delete the condition (the PIR automation only) | " |
 
 Every Home Assistant file is marked up: **search for `CHANGE`**.
 
@@ -253,7 +258,7 @@ Every Home Assistant file is marked up: **search for `CHANGE`**.
 | Switching to Matrix or Disco plays an off-sweep first | Same: that build is missing patch P6. Rebuild from [Part 4](parts/04-behaviour-patches/README.md) |
 | The top steps are dim or yellow | Voltage drop. Inject power at the far end |
 | The Disco bars are the wrong colours | `palette0.json` isn't on the controller. Upload it and reboot |
-| The wall buttons do nothing | They should always work, in daylight too — **Stairs Off** parks the strip but leaves the staircase logic enabled. Check `/json/cfg` → `um.staircase.enabled` is `true`. The one case where they are deliberately dead is while **Matrix**, **Disco** or **Danger** is running — [Part 7](parts/07-home-assistant/README.md) |
+| The hardware buttons do nothing | They should always work, in daylight too — **Stairs Off** parks the strip but leaves the staircase logic enabled. Check `/json/cfg` → `um.staircase.enabled` is `true`. The one case where they are deliberately dead is while **Matrix**, **Disco** or **Danger** is running — [Part 7](parts/07-home-assistant/README.md) |
 | Every trigger lights the whole staircase red | A **Danger** ran, and the controller is still carrying Danger's single full-matrix segment. Preset 7 is meant to rebuild the 64 rows — regenerate it with `tools/make_staircase.py` and check `/json/state` shows 64 segments after selecting **Stairs Off** |
 | Phone and Home Assistant triggers do nothing | Same cause, or you're in Matrix or Disco, where triggers are ignored by design |
 | All snaps on and off instead of fading | A build without patch P7, or `fade-in-ms` / `fade-out-ms` set to 0 |

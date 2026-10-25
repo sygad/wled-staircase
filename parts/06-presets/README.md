@@ -26,7 +26,7 @@ running — so switching mode is one API call and nothing can end up half-applie
 | 4 | **Stairs Matrix** | 1 full segment | 2D effect **Matrix** (fx 153), green rain falling top → bottom. Runs continuously, ignores triggers |
 | 5 | **Stairs Disco** | 1 full segment | 2D effect **GEQ** (fx 139), bars rising from the bottom, custom palette. Runs continuously, ignores triggers |
 | 6 | **Stairs Danger** | 1 full segment | Solid red, everything lit. Used for five seconds at a time by Home Assistant. `"tt": 2` fades it up over 0.2 s |
-| 7 | **Stairs Off** | 64 row segments | Master power off, but the **staircase logic stays on**, so the wall buttons still work. It carries the row layout in Sweep's warm white, because it is the resting state and it has to undo the single full-matrix segment that All, Matrix, Disco and Danger leave behind |
+| 7 | **Stairs Off** | 64 row segments | Master power off, but the **staircase logic stays on**, so the hardware buttons still work. It carries the row layout in Sweep's warm white, because it is the resting state and it has to undo the single full-matrix segment that All, Matrix, Disco and Danger leave behind |
 | 8 | **zz Trigger Bottom** | — | `{"staircase": {"bottom-sensor": true}}`: the same as pressing the bottom button |
 | 9 | **zz Trigger Top** | — | `{"staircase": {"top-sensor": true}}`: the same as pressing the top button |
 | 10 | **zz Danger Off** | 1 full segment | Stairs Off with `"tt": 5`, so it fades to black over 0.5 s instead of cutting. How Danger finishes |

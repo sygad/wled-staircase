@@ -133,7 +133,7 @@ def main():
                       f"power {s['on']}, {len([g for g in s['seg'] if g.get('on')])} segments lit")
                 if n != 10:  # zz Danger Off deliberately carries no staircase block
                     check(usermod_enabled(i), f"{n} {NAMES[n]}: staircase logic on",
-                          "the wall buttons would be dead")
+                          "the hardware buttons would be dead")
                 if n in (1, 2, 7):
                     # Stairs Off has to carry the rows too: it is the resting state, and
                     # All, Matrix, Disco and Danger all collapse them into one segment
@@ -157,7 +157,7 @@ def main():
     if a.presets or a.sweep:
         # The bug this guards: Danger collapses the 64 rows into one full-matrix red
         # segment, and Home Assistant then parks the controller on Stairs Off. If that
-        # preset does not rebuild the rows, every later wall-button press lights the
+        # preset does not rebuild the rows, every later hardware-button press lights the
         # whole staircase solid red instead of sweeping.
         print("\nRecovery from Danger")
         post(a.host, {"ps": 6})

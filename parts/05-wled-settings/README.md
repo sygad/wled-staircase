@@ -58,7 +58,7 @@ decides when the stairs are live, in [Part 7](../07-home-assistant/README.md)).
 > Three presets switch the logic off while they run: **Matrix**, **Disco** and
 > **Danger**. Don't save a config during one of those. **Stairs Off** is safe —
 > it parks the strip but deliberately leaves the logic enabled, which is what
-> keeps the wall buttons alive when Home Assistant isn't driving the stairs.
+> keeps the hardware buttons alive when Home Assistant isn't driving the stairs.
 >
 > This applies to WLED's own Usermods settings page and to a `/json/cfg` POST
 > alike. Check `/json/cfg` → `um.staircase.enabled` is `true` before saving.

@@ -5,7 +5,7 @@
 # Search this file for CHANGE and swap in your own entity IDs.
 
 alias: Staircase v2 – Apply state
-description: Puts WLED Staircase v2 into the right preset whenever Power, Moon, mode or day/night change, when HA starts, and when the controller comes back online. The house motion toggle is not involved: that gates the motion sensors only.
+description: 'Puts WLED Staircase v2 into the right preset whenever Power, Moon, mode or day/night change, when HA starts, and when the controller comes back online. The house motion toggle is not involved - it gates the motion sensors only.'
 triggers:
 - trigger: state
   entity_id:
@@ -74,7 +74,7 @@ actions:
       state: above_horizon
       note: >-
         The house motion toggle is deliberately NOT here: it gates the motion
-        sensors only, in the PIR and Danger automations. Parking the stairs over
+        sensors only, in the PIR automation. Parking the stairs over
         it would kill the selected mode as well.
     - condition: state
       entity_id: input_boolean.stairs_s3_moon

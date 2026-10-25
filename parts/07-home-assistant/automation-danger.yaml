@@ -6,7 +6,7 @@
 # Search this file for CHANGE and swap in your own entity IDs.
 
 alias: Staircase v2 – Danger
-description: 'Top staircase PIR while the alarm is armed home: WLED Staircase v2 fades up red over 0.2 s, holds 5 s, fades away over 0.5 s, then back to the current mode. Visual only, no notifications.'
+description: 'Top staircase PIR while the alarm is armed home: WLED Staircase v2 fades up red over 0.2 s, holds 5 s, fades away over 0.5 s, then back to the current mode. Visual only, no notifications. Gated by the alarm and by Power alone - not by day/night, Moon or the house motion toggle.'
 triggers:
 - trigger: occupancy.detected
   target:
@@ -15,20 +15,15 @@ conditions:
 - condition: state
   entity_id: alarm_control_panel.home_alarm  # CHANGE: your own entity
   state: armed_home
+  note: >-
+    The only gate that belongs here. Danger is above everything else: it ignores
+    day/night, it ignores Moon, and it ignores the house motion toggle. The alarm
+    can be armed at four in the afternoon as easily as at midnight, and a warning
+    that only works in the evening is not a warning.
 - condition: state
   entity_id: input_boolean.stairs_s3_power
   state: 'on'
-- condition: state
-  entity_id: input_boolean.motion_sensors  # CHANGE: your own master motion toggle, or delete this line
-  state: 'on'
-- condition: or
-  conditions:
-  - condition: state
-    entity_id: sun.sun
-    state: below_horizon
-  - condition: state
-    entity_id: input_boolean.stairs_s3_moon
-    state: 'on'
+  note: Power off is the one thing that stops it - the whole installation is off.
 actions:
 - action: select.select_option
   target:
