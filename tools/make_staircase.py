@@ -74,9 +74,13 @@ def presets(rows, width, bri, danger_in=200, danger_out=500):
                                "seg": f({"fx": 0, "col": [[255, 0, 0], [0, 0, 0], [0, 0, 0]]}),
                                "staircase": {"enabled": False}}),
         # Master power off, but the staircase logic stays ENABLED, so the wall buttons
-        # keep working when Home Assistant parks the stairs. No "seg" block either, so
-        # it leaves whichever layout the current mode set in place.
-        7: ("Stairs Off",     {"tt": 0, "on": False,
+        # keep working when Home Assistant parks the stairs. It carries the row
+        # layout as well, in Sweep's warm white: All, Matrix, Disco and Danger all
+        # collapse the 64 rows into one full-matrix segment, and this is the resting
+        # state Home Assistant returns to, so it is what rebuilds them. Without that
+        # the wall buttons light the whole staircase in the last mode's colour -
+        # solid red, after a Danger.
+        7: ("Stairs Off",     {"tt": 0, "on": False, "seg": r(lambda i: WARM),
                                "staircase": {"enabled": True}}),
         8: ("zz Trigger Bottom", {"staircase": {"bottom-sensor": True}}),
         9: ("zz Trigger Top",    {"staircase": {"top-sensor": True}}),

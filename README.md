@@ -254,6 +254,7 @@ Every Home Assistant file is marked up: **search for `CHANGE`**.
 | The top steps are dim or yellow | Voltage drop. Inject power at the far end |
 | The Disco bars are the wrong colours | `palette0.json` isn't on the controller. Upload it and reboot |
 | The wall buttons do nothing | They should always work, in daylight too — **Stairs Off** parks the strip but leaves the staircase logic enabled. Check `/json/cfg` → `um.staircase.enabled` is `true`. The one case where they are deliberately dead is while **Matrix**, **Disco** or **Danger** is running — [Part 7](parts/07-home-assistant/README.md) |
+| Every trigger lights the whole staircase red | A **Danger** ran, and the controller is still carrying Danger's single full-matrix segment. Preset 7 is meant to rebuild the 64 rows — regenerate it with `tools/make_staircase.py` and check `/json/state` shows 64 segments after selecting **Stairs Off** |
 | Phone and Home Assistant triggers do nothing | Same cause, or you're in Matrix or Disco, where triggers are ignored by design |
 | All snaps on and off instead of fading | A build without patch P7, or `fade-in-ms` / `fade-out-ms` set to 0 |
 | The buttons stopped working after I saved a setting | A config was saved while the staircase logic was disabled, so `enabled: false` became the boot default. Switch Moon on, tick **enabled** in Config → Usermods, save again — [Part 5](parts/05-wled-settings/README.md) |

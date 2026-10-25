@@ -15,7 +15,7 @@ import argparse, json, sys, time, urllib.request
 WARM, RED, GREEN, VIOLET = [255, 160, 60], [255, 0, 0], [0, 255, 0], [128, 0, 255]
 # preset -> (power on?, one full segment?, effect id, first colour)
 LIT = {4: (True, True, 153, GREEN), 5: (True, True, 139, None), 6: (True, True, 0, RED)}
-DARK = {1: WARM, 2: RED, 3: WARM, 7: [0, 0, 0], 10: [0, 0, 0]}
+DARK = {1: WARM, 2: RED, 3: WARM, 7: WARM, 10: [0, 0, 0]}
 NAMES = {1: "Stairs Sweep", 2: "Stairs Rainbow", 3: "Stairs All", 4: "Stairs Matrix",
          5: "Stairs Disco", 6: "Stairs Danger", 7: "Stairs Off",
          8: "zz Trigger Bottom", 9: "zz Trigger Top", 10: "zz Danger Off"}
@@ -134,9 +134,11 @@ def main():
                 if n != 10:  # zz Danger Off deliberately carries no staircase block
                     check(usermod_enabled(i), f"{n} {NAMES[n]}: staircase logic on",
                           "the wall buttons would be dead")
-                if n in (1, 2):
+                if n in (1, 2, 7):
+                    # Stairs Off has to carry the rows too: it is the resting state, and
+                    # All, Matrix, Disco and Danger all collapse them into one segment
                     check(len(s["seg"]) == a.rows, f"{n} {NAMES[n]}: {a.rows} row segments",
-                          f"{len(s['seg'])}")
+                          f"{len(s['seg'])} — a trigger would light the whole staircase as one block")
                     check(s["seg"][0]["col"][0] == DARK[n], f"{n} {NAMES[n]}: bottom row colour")
                     if n == 2:
                         check(s["seg"][a.rows - 1]["col"][0] == VIOLET,
@@ -151,6 +153,23 @@ def main():
                 if col:
                     check(s["seg"][0]["col"][0] == col, f"{n} {NAMES[n]}: colour {col}",
                           f"{s['seg'][0]['col'][0]}")
+
+    if a.presets or a.sweep:
+        # The bug this guards: Danger collapses the 64 rows into one full-matrix red
+        # segment, and Home Assistant then parks the controller on Stairs Off. If that
+        # preset does not rebuild the rows, every later wall-button press lights the
+        # whole staircase solid red instead of sweeping.
+        print("\nRecovery from Danger")
+        post(a.host, {"ps": 6})
+        time.sleep(1.2)
+        collapsed = len(get(a.host, "/json/state")["seg"])
+        check(collapsed == 1, "Danger collapses the rows into one segment", f"{collapsed} segments")
+        post(a.host, {"ps": 7})
+        time.sleep(1.2)
+        s = get(a.host, "/json/state")
+        check(len(s["seg"]) == a.rows and s["seg"][0]["col"][0] == WARM,
+              f"Stairs Off rebuilds the {a.rows} rows in warm white",
+              f"{len(s['seg'])} segments, bottom row {s['seg'][0]['col'][0]}")
 
     if a.sweep:
         print("\nA real sweep (preset 1, triggered from the bottom)")

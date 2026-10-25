@@ -88,6 +88,23 @@ switch lights on" is exactly what that switch means.
 > if Matrix, Disco or Danger left it off. Those three still switch it off while
 > they run, which is the one case where a wall button does nothing.
 >
+> ### ⚠️ And it has to carry the row layout
+>
+> Fixing the flag alone leaves a second fault, which took a Danger test to find.
+> **All, Matrix, Disco and Danger each collapse the 64 row segments into one
+> segment covering the whole matrix**, and that is how the controller stays until
+> something rebuilds them. Stairs Off is what Home Assistant parks the stairs on,
+> so if it carries no `seg` block the rows are never rebuilt: the next wall-button
+> press lights the whole staircase at once, in the last mode's colour. After a
+> Danger that is solid red, on every press, for as long as the stairs stay parked.
+>
+> So **preset 7 carries the 64 rows** in Sweep's warm white. The trade is that
+> parking the stairs drops the All layout: with mode **All** and the stairs
+> parked, a wall button sweeps rather than fading everything together. Reopening
+> the window reapplies the mode's own preset, so All is itself again. For a
+> fallback whose job is to prove the hardware works, a sweep is the better thing
+> to land on.
+>
 > If you are updating, regenerate preset 7:
 > `python3 tools/make_staircase.py --rows 64 --width 8 --ip <ip> --apply`.
 

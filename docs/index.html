@@ -429,10 +429,12 @@
       for (var r = 0; r < ROWS; r++) rows[r] = RED;
       fw.fade = { from: 0, to: 1, start: performance.now(), dur: DANGER_IN_MS };
     } else {   // Stairs Off: parks the strip, but the staircase logic stays ON so
-               // the wall buttons keep working. It carries no segment block, so it
-               // leaves the current mode's layout alone.
+               // the wall buttons keep working. It carries the row layout in warm
+               // white as well, which is what rebuilds the rows after All, Matrix,
+               // Disco or Danger collapsed them into one segment. So it resets to
+               // the Sweep look, whichever mode is selected: the resets above are
+               // the whole of it.
       fw.usermod = true; fw.master = false;
-      fw.rainbow = ha.mode === "Rainbow"; fw.whole = ha.mode === "All";
     }
     log(why ? why + " → <b>" + name + "</b>" : "<b>" + name + "</b>");
   }

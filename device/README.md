@@ -15,11 +15,13 @@ Two values are placeholders rather than mine: the Wi-Fi SSID
 are never in a WLED backup.
 
 One value is deliberately not what my controller reported when this was taken:
-`um.staircase.enabled` is **true** here. The controller said `false`, because it
-was daylight and Home Assistant had applied Stairs Off — and shipping that would
-hand you a config that boots with the staircase logic disabled and the buttons
-dead. Read the warning in [Part 5](../parts/05-wled-settings/README.md): it is
-the same trap in a different hat.
+`um.staircase.enabled` is **true** here. The controller said `false`, because
+back then Stairs Off switched the staircase logic off and it was daylight, so
+Home Assistant had Stairs Off applied — and shipping that would hand you a config
+that boots with the logic disabled and the buttons dead. Stairs Off no longer
+does that ([Part 7](../parts/07-home-assistant/README.md)), but the trap itself
+is still live for Matrix, Disco and Danger: read the warning in
+[Part 5](../parts/05-wled-settings/README.md).
 
 `fade-in-ms` and `fade-out-ms` appear here because the controller reports its
 live settings, but on my board they are still the firmware's own defaults rather
