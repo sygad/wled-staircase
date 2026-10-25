@@ -333,6 +333,8 @@
   var WARM = [255, 160, 60];
   var RED = [255, 0, 0];
   var DANGER_MS = 5000;
+  var DANGER_IN_MS = 200;     // preset 6's own tt: Danger fades up faster than All
+  var DANGER_OUT_MS = 500;    // preset 10 (zz Danger Off): and away faster too
   var GEQ = [[255,0,0],[255,255,0],[0,255,0],[0,255,255],[0,0,255]];
 
   // WLED's own Matrix effect, with the settings preset 4 carries:
@@ -425,7 +427,13 @@
     else if (name === "Stairs Danger") {
       fw.usermod = false; fw.master = true; fw.base = RED;
       for (var r = 0; r < ROWS; r++) rows[r] = RED;
-    } else { fw.usermod = false; fw.master = false; }   // Stairs Off
+      fw.fade = { from: 0, to: 1, start: performance.now(), dur: DANGER_IN_MS };
+    } else {   // Stairs Off: parks the strip, but the staircase logic stays ON so
+               // the wall buttons keep working. It carries no segment block, so it
+               // leaves the current mode's layout alone.
+      fw.usermod = true; fw.master = false;
+      fw.rainbow = ha.mode === "Rainbow"; fw.whole = ha.mode === "All";
+    }
     log(why ? why + " → <b>" + name + "</b>" : "<b>" + name + "</b>");
   }
 
@@ -462,8 +470,15 @@
 
   function tick(now) {
     if (dangerUntil && now > dangerUntil) {
-      dangerUntil = 0;
-      applyState("Danger finished");
+      // zz Danger Off: the red fades away over DANGER_OUT_MS, and only then does
+      // the previous mode come back. The hold counts from the start of the fade-in.
+      if (!fw.fade || fw.fade.to !== 0) {
+        fw.fade = { from: fadeAlpha(now), to: 0, start: now, dur: DANGER_OUT_MS };
+      } else if (now - fw.fade.start >= DANGER_OUT_MS) {
+        dangerUntil = 0;
+        clearRows();
+        applyState("Danger finished");
+      }
     }
 
     if (fw.phase === "on") {
@@ -501,7 +516,7 @@
       }
     }
 
-    alpha = fw.whole ? fadeAlpha(now) : 1;
+    alpha = fw.fade ? fadeAlpha(now) : 1;
 
     if (fw.effect === "matrix") matrixEffect(now);
     if (fw.effect === "disco") discoEffect(now);

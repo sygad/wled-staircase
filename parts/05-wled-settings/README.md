@@ -1,4 +1,4 @@
-[← Part 4 · The seven behaviour patches](../04-behaviour-patches/README.md) · [All parts](../../README.md#the-parts) · [Part 6 · The nine presets →](../06-presets/README.md)
+[← Part 4 · The seven behaviour patches](../04-behaviour-patches/README.md) · [All parts](../../README.md#the-parts) · [Part 6 · The ten presets →](../06-presets/README.md)
 
 # Part 5 · WLED settings
 
@@ -49,25 +49,24 @@ decides when the stairs are live, in [Part 7](../07-home-assistant/README.md)).
 
 > ### ⚠️ Never save the usermod settings while the staircase logic is off
 >
-> WLED writes the **live** value of `enabled` when it saves, not the stored one —
-> and Home Assistant sets it to false every time it applies **Stairs Off**, which
-> it does on its own outside the active window ([Part 7](../07-home-assistant/README.md)).
+> WLED writes the **live** value of `enabled` when it saves, not the stored one.
+> Save a config while the logic is off and `enabled: false` becomes the **boot
+> default** — the controller then comes up deaf, which destroys the point of the
+> buttons working without Home Assistant. Nothing looks wrong; it just doesn't
+> respond.
 >
-> Save a config at that moment and `enabled: false` becomes the **boot default**.
-> The controller then comes up with the staircase logic off and the buttons dead,
-> which quietly destroys the whole point of the thing working without Home
-> Assistant. Nothing looks wrong; it just doesn't respond.
+> Three presets switch the logic off while they run: **Matrix**, **Disco** and
+> **Danger**. Don't save a config during one of those. **Stairs Off** is safe —
+> it parks the strip but deliberately leaves the logic enabled, which is what
+> keeps the wall buttons alive when Home Assistant isn't driving the stairs.
 >
 > This applies to WLED's own Usermods settings page and to a `/json/cfg` POST
-> alike. **Switch the Moon helper on first** so the logic is enabled, then save,
-> then switch it back off.
+> alike. Check `/json/cfg` → `um.staircase.enabled` is `true` before saving.
 
-> **The fade values may not be in your flash yet.** `fade-in-ms` and
-> `fade-out-ms` come from the firmware's own defaults (500 and 2000), and they
-> work from the first boot — but until a config has been saved they aren't
-> written to the controller's stored config. Behaviour is correct either way;
-> it just means a different build's defaults would silently give different fades
-> with nothing in `cfg.json` explaining it.
+> **The fade values are written to flash** by `cfg-update.json`, alongside the
+> step delay and on-time — so `fade-in-ms` and `fade-out-ms` (500 and 2000) are
+> in `cfg.json` where you can see them, rather than coming silently from the
+> firmware's compiled defaults.
 
 ## How it works
 
@@ -111,7 +110,7 @@ curl -X POST -H "Content-Type: application/json" \
 If the **top** row lights, your panel is top-start or wired straight: flip
 *first LED* or *serpentine* in 2D Configuration, or pass `--straight`.
 
-Finish with [Part 6 · The nine presets](../06-presets/README.md), then
+Finish with [Part 6 · The ten presets](../06-presets/README.md), then
 `python3 parts/08-testing/check_device.py --host <ip>` to confirm every setting
 above landed.
 
@@ -120,4 +119,4 @@ above landed.
 
 ---
 
-[← Part 4 · The seven behaviour patches](../04-behaviour-patches/README.md) · [All parts](../../README.md#the-parts) · [Part 6 · The nine presets →](../06-presets/README.md)
+[← Part 4 · The seven behaviour patches](../04-behaviour-patches/README.md) · [All parts](../../README.md#the-parts) · [Part 6 · The ten presets →](../06-presets/README.md)

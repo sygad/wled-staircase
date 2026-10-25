@@ -23,8 +23,8 @@ Any ESP32-S3 with 16 MB flash and PSRAM should take them.
 
 | File | Use it for | SHA-256 |
 |---|---|---|
-| `WLED_16.0.1_ESP32-S3_Staircase_FACTORY.bin` | **USB flashing** to address `0x0`. Bootloader, partition table, OTA data and app in one image | `bbe6298b4962dedd4793784d3de43b452c12df941f1bcc602d14c3677355d66c` |
-| `WLED_16.0.1_ESP32-S3_Staircase_OTA.bin` | **Updating** a board already running WLED, through Manual OTA in the web UI | `5509f0c8357012bd111fd4e694c3abfb9e5ecdc2916d8aac3350403ee985a46b` |
+| `WLED_16.0.1_ESP32-S3_Staircase_FACTORY.bin` | **USB flashing** to address `0x0`. Bootloader, partition table, OTA data and app in one image | `eca28af63ba071ee565b3439cad09c4bab113cbdfe5d869d96337dd37aee1d86` |
+| `WLED_16.0.1_ESP32-S3_Staircase_OTA.bin` | **Updating** a board already running WLED, through Manual OTA in the web UI | `1931bb2b113a9fa14e9201e143c5bbce45908e1d37ff437e4d6857bd3cde773e` |
 
 The first flash goes over USB; everything after that is a Manual OTA with the
 second file — see [Flashing it](#flashing-it-usb-first-ota-afterwards) below.
@@ -34,7 +34,6 @@ second file — see [Flashing it](#flashing-it-usb-first-ota-afterwards) below.
 | Flag | Why |
 |---|---|
 | `-D MAX_NUM_SEGMENTS=64` | One segment per step. WLED's own limit is 32, or 64 on a board with PSRAM — the patch in [Part 4](../04-behaviour-patches/README.md) lets the build ask for a number instead of inferring it |
-| `-D STAIRCASE_V2` | Gates patches P3–P6, so the same usermod source still builds the older classic-ESP32 firmware unchanged |
 | `custom_usermods = Animated_Staircase audioreactive` | The staircase logic, and the microphone support the Disco preset will want |
 | `-DBOARD_HAS_PSRAM` + `memory_type = qio_opi` (inherited) | 8 MB octal PSRAM, which is what allows more than 32 segments |
 | `-D ARDUINO_USB_CDC_ON_BOOT=1` | This board has only the S3's native USB, no serial chip |

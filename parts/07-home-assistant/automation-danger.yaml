@@ -1,11 +1,12 @@
 # Staircase v2 · Automation 2 of 3 – Danger (red flash while armed home)
 # Explained in: parts/07-home-assistant/README.md
 # Paste into: Settings → Automations → ⋮ → Edit in YAML (new empty automation)
-# Needs: the top occupancy sensor, an alarm_control_panel, automation.staircase_v2_apply_state
+# Needs: the top occupancy sensor, an alarm_control_panel, automation.staircase_v2_apply_state,
+#        presets 6 (Stairs Danger) and 10 (zz Danger Off)
 # Search this file for CHANGE and swap in your own entity IDs.
 
 alias: Staircase v2 – Danger
-description: 'Top staircase PIR while the alarm is armed home: WLED Staircase v2 goes red for 5 s, then back to the current mode. Visual only, no notifications.'
+description: 'Top staircase PIR while the alarm is armed home: WLED Staircase v2 fades up red over 0.2 s, holds 5 s, fades away over 0.5 s, then back to the current mode. Visual only, no notifications.'
 triggers:
 - trigger: occupancy.detected
   target:
@@ -36,6 +37,16 @@ actions:
     option: Stairs Danger
 - delay:
     seconds: 5
+  note: The 5 s hold starts when the fade-in begins, not when it finishes, so the
+    ramp counts towards the five seconds - the same convention the All preset follows.
+- alias: Fade the red away over 0.5 s (Stairs Off, but with a transition)
+  action: select.select_option
+  target:
+    entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+  data:
+    option: zz Danger Off
+- delay:
+    milliseconds: 600
 - alias: Back to the previous mode
   action: automation.trigger
   target:

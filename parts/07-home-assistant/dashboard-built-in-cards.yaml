@@ -26,11 +26,9 @@
   show_state: false
   tap_action:
     action: perform-action
-    perform_action: select.select_option
-    target:
-      entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+    perform_action: script.stairs_s3_software_trigger  # CHANGE: your own script
     data:
-      option: zz Trigger Top
+      direction: top
   grid_options:
     columns: 6
     rows: 1
@@ -40,11 +38,9 @@
   show_state: false
   tap_action:
     action: perform-action
-    perform_action: select.select_option
-    target:
-      entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+    perform_action: script.stairs_s3_software_trigger  # CHANGE: your own script
     data:
-      option: zz Trigger Bottom
+      direction: bottom
   grid_options:
     columns: 6
     rows: 1

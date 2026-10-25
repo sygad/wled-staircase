@@ -13,25 +13,23 @@ refinements that stop a 64-segment sweep from stuttering.
 | **Built from** | WLED's [Animated Staircase usermod](https://github.com/wled/WLED/tree/main/usermods/Animated_Staircase), EUPL-1.2 |
 | **Files in this folder** | `patches/0001-allow-overriding-MAX_NUM_SEGMENTS.patch` · `patches/0002-staircase-v2-behaviour.patch` |
 | **Applies to** | a clean WLED 16.0.1 checkout: `git apply patches/*.patch` |
-| **Gated by** | `-D STAIRCASE_V2` for P3–P6, so a build without the flag behaves exactly as stock |
 | **Proved by** | the preset-to-preset test in [Part 8](../08-testing/README.md) |
 
 ## The seven patches
 
-| # | What it does | Gated? |
-|---|---|---|
-| P1 | Minimum on-time drops from 10 s to 1 s | no |
-| P2 | The off-sweep runs in the direction of the latest trigger | no |
-| P3 | The on-time starts when the sweep finishes, not when the button is pressed | `STAIRCASE_V2` |
-| P4 | Trigger inputs are active-low: a button to ground, no resistors | `STAIRCASE_V2` |
-| P5 | While the stairs are lit, the opposite sensor is ignored | `STAIRCASE_V2` |
-| P6 | Presets can switch the staircase logic on and off cleanly | `STAIRCASE_V2` |
-| P7 | "All" fades up quickly and down slowly, instead of snapping | `STAIRCASE_V2` |
+| # | What it does |
+|---|---|
+| P1 | Minimum on-time drops from 10 s to 1 s |
+| P2 | The off-sweep runs in the direction of the latest trigger |
+| P3 | The on-time starts when the sweep finishes, not when the button is pressed |
+| P4 | Trigger inputs are active-low: a button to ground, no resistors |
+| P5 | While the stairs are lit, the opposite sensor is ignored |
+| P6 | Presets can switch the staircase logic on and off cleanly |
+| P7 | "All" fades up quickly and down slowly, instead of snapping |
 
-P1 and P2 are improvements anyone would want, so they are unconditional. P3–P7
-change behaviour that an existing setup may be relying on — the trigger polarity
-most of all — so they sit behind the build flag and leave an unflagged build
-behaving exactly as stock.
+All seven are unconditional. P4 is the one to be aware of if you adapt this
+elsewhere: it inverts the trigger polarity, so it expects a button to ground
+rather than a PIR pulling the pin high.
 
 ## What I changed
 
@@ -96,13 +94,11 @@ if a PIR were pulling them **high**. With a plain button to ground that reads
 ```c
 bool triggerPinRead(int8_t pin) {
   if (pin < 0) return false;
-#ifdef STAIRCASE_V2
   return digitalRead(pin) == LOW;      // button to ground
-#else
-  return digitalRead(pin);             // PIR pulling the pin high
-#endif
 }
 ```
+
+Upstream read it as `digitalRead(pin)` — a PIR pulling the pin high.
 
 Software triggers are untouched, so Home Assistant's `zz Trigger Bottom` /
 `zz Trigger Top` presets still work ([Part 7](../07-home-assistant/README.md)).
@@ -134,8 +130,8 @@ and the usermod's own enable/disable did three unwanted things:
 - a trigger-only API call (`{"staircase":{"bottom-sensor":true}}`) was treated as
   "enable me", so a trigger could switch the logic back on by itself.
 
-So under `STAIRCASE_V2`, `enable()` leaves master power and the state update to
-the preset, and simply returns to a clean standby:
+So `enable()` leaves master power and the state update to the preset, and simply
+returns to a clean standby:
 
 ```c
 on = false;
@@ -201,6 +197,13 @@ Measured on the real controller, triggering All twice: the steps are up by about
 > finishes, so a 5 s hold really means 0.5 s of ramp and 4.5 s at full brightness.
 > It looks right, so it stays.
 
+**Danger fades too, but not from here.** Danger is applied and cleared by Home
+Assistant rather than by the usermod, so these two settings never touch it. It
+gets the same soft start and finish from the presets' own transition times —
+0.2 s up and 0.5 s down, deliberately faster than All, because the whole point
+of it is immediacy. See [Part 6](../06-presets/README.md#the-presets) and
+[Part 7](../07-home-assistant/README.md).
+
 ### 8. The latent bug P7 flushed out
 
 Worth knowing if you adapt this usermod. The power-off guard from the fixes below
@@ -220,8 +223,7 @@ a slow fade, so nothing had ever shown it up.
 
 ### 9. Three fixes for 64 segments on WLED 16
 
-These live inside the `STAIRCASE_V2` blocks too. None of them changes behaviour
-on paper; all three were visible on the stairs.
+None of them changes behaviour on paper; all three were visible on the stairs.
 
 | Problem | Fix |
 |---|---|
@@ -236,7 +238,7 @@ of snapping.
 ## Add just this part
 
 1. Clone WLED 16.0.1 and `git apply patches/*.patch`.
-2. Build with `-D STAIRCASE_V2` to get P3–P6, or without it for P1 and P2 only.
+2. Copy in `parts/03-firmware/platformio_override.ini` and build `esp32s3_staircase`.
 3. Prove it on the board, not on paper:
    `python3 parts/08-testing/check_device.py --host <ip> --sweep`.
 4. Adjust the fades if you want to, in **Config → Usermods → Animated

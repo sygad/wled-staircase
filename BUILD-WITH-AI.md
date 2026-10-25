@@ -58,13 +58,13 @@ steps in order. The repo is the source of truth; do not invent values.
 | File | What it is |
 |---|---|
 | `device/cfg.json` | **The reference controller's full WLED config**, as a backup file. Shows what every setting ends up as |
-| `device/presets.json` | **The reference presets 1–9**, byte-for-byte as they run on the real device |
+| `device/presets.json` | **The reference presets 1–10**, byte-for-byte as they run on the real device |
 | `device/palette0.json` | The custom palette the Disco preset needs |
 | `tools/make_staircase.py` | Generates `cfg-update.json`, `presets.json` and `palette0.json` for the user's own step count and width. **Use this rather than editing JSON by hand** |
 | `parts/03-firmware/*.bin` | Pre-built ESP32-S3 firmware: `_FACTORY.bin` for USB flashing at `0x0`, `_OTA.bin` for updating |
 | `parts/03-firmware/platformio_override.ini` | The build environments |
 | `parts/04-behaviour-patches/patches/*.patch` | The two patches, applied to a clean WLED 16.0.1 checkout |
-| `parts/07-home-assistant/*.yaml` | Helpers, three automations, two dashboard cards. Every line needing a change is marked `# CHANGE:` |
+| `parts/07-home-assistant/*.yaml` | Helpers, three automations, one script, two dashboard cards. Every line needing a change is marked `# CHANGE:` |
 | `parts/08-testing/check_device.py` | The acceptance test. Run it at the end |
 | `parts/08-testing/preset_matrix.py` | The deeper behaviour test. Offer it if the user changed the patches |
 

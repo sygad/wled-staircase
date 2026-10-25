@@ -4,7 +4,7 @@
 Writes (into --out, default ./out):
   cfg-update.json   LED output, 2D matrix, power limit, usermod settings
                     (including the All preset's fade times), boot preset
-  presets.json      presets 1-9, ready to upload as /presets.json
+  presets.json      presets 1-10, ready to upload as /presets.json
   palette0.json     the GEQ palette the Disco preset uses
 
 Nothing is sent anywhere unless you pass --ip, and then only with --apply.
@@ -45,7 +45,7 @@ def full_segment(rows, width, extra):
     return [seg] + [{"id": i, "stop": 0} for i in range(1, rows)]
 
 
-def presets(rows, width, bri):
+def presets(rows, width, bri, danger_in=200, danger_out=500):
     r, f = (lambda c: row_segments(rows, width, c)), (lambda e: full_segment(rows, width, e))
     return {
         1: ("Stairs Sweep",   {"tt": 0, "on": False, "bri": bri, "seg": r(lambda i: WARM),
@@ -68,21 +68,29 @@ def presets(rows, width, bri):
         5: ("Stairs Disco",   {"tt": 0, "on": True, "bri": bri,
                                "seg": f({"fx": GEQ_FX, "o1": False, "pal": CUSTOM_PALETTE_0, "c1": 255}),
                                "staircase": {"enabled": False}}),
-        6: ("Stairs Danger",  {"tt": 0, "on": True, "bri": bri,
+        # Danger is applied and cleared by Home Assistant, not by the usermod, so its
+        # fades are the preset's own transition time: tt is in units of 100 ms.
+        6: ("Stairs Danger",  {"tt": danger_in // 100, "on": True, "bri": bri,
                                "seg": f({"fx": 0, "col": [[255, 0, 0], [0, 0, 0], [0, 0, 0]]}),
                                "staircase": {"enabled": False}}),
+        # Master power off, but the staircase logic stays ENABLED, so the wall buttons
+        # keep working when Home Assistant parks the stairs. No "seg" block either, so
+        # it leaves whichever layout the current mode set in place.
         7: ("Stairs Off",     {"tt": 0, "on": False,
-                               "seg": f({"fx": 0, "col": [[0, 0, 0], [0, 0, 0], [0, 0, 0]], "on": False}),
-                               "staircase": {"enabled": False}}),
+                               "staircase": {"enabled": True}}),
         8: ("zz Trigger Bottom", {"staircase": {"bottom-sensor": True}}),
         9: ("zz Trigger Top",    {"staircase": {"top-sensor": True}}),
+        # Stairs Off, but fading instead of cutting: how Danger finishes. No staircase
+        # key at all, so it never touches whether the usermod is enabled.
+        10: ("zz Danger Off",    {"tt": danger_out // 100, "on": False,
+                               "seg": f({"fx": 0, "col": [[0, 0, 0], [0, 0, 0], [0, 0, 0]], "on": False})}),
     }
 
 
-def preset_file(rows, width, bri):
+def preset_file(rows, width, bri, danger_in=200, danger_out=500):
     """The same presets as a /presets.json file (slot 0 is WLED's reserved empty slot)."""
     out = {"0": {}}
-    for n, (name, body) in presets(rows, width, bri).items():
+    for n, (name, body) in presets(rows, width, bri, danger_in, danger_out).items():
         out[str(n)] = dict(body, n=name, ib=True, sb=True)
     return out
 
@@ -129,6 +137,8 @@ def main():
     p.add_argument("--on-time", type=int, default=5, help="seconds fully lit, after the sweep (default 5)")
     p.add_argument("--fade-in", type=int, default=500, help="ms for the All preset to fade up (default 500)")
     p.add_argument("--fade-out", type=int, default=2000, help="ms for the All preset to fade away (default 2000)")
+    p.add_argument("--danger-in", type=int, default=200, help="ms for Danger to fade up (default 200)")
+    p.add_argument("--danger-out", type=int, default=500, help="ms for Danger to fade away (default 500)")
     p.add_argument("--max-ma", type=int, default=26000, help="power limit in mA, ~85%% of your supply")
     p.add_argument("--led-ma", type=int, default=55, help="mA per LED at full white (default 55)")
     p.add_argument("--brightness", type=int, default=255)
@@ -146,11 +156,14 @@ def main():
         p.error("the usermod's minimum on-time is 1 s")
     if not (0 <= a.fade_in <= 10000 and 0 <= a.fade_out <= 10000):
         p.error("the fades are clamped to 0-10000 ms by the firmware")
+    for name, ms in (("--danger-in", a.danger_in), ("--danger-out", a.danger_out)):
+        if not (0 <= ms <= 65500 and ms % 100 == 0):
+            p.error(f"{name} is a preset transition time: 0-65500 ms, in whole 100 ms steps")
 
     os.makedirs(a.out, exist_ok=True)
     files = {
         "cfg-update.json": cfg_update(a),
-        "presets.json": preset_file(a.rows, a.width, a.brightness),
+        "presets.json": preset_file(a.rows, a.width, a.brightness, a.danger_in, a.danger_out),
         "palette0.json": {"palette": GEQ_PALETTE},
     }
     for name, obj in files.items():
@@ -163,6 +176,7 @@ def main():
           f"\nsweep {sweep:.1f} s on, {a.on_time} s lit, {sweep:.1f} s off"
           f" ({2 * sweep + a.on_time:.1f} s per trigger)"
           f"\nAll: fades up over {a.fade_in / 1000:.1f} s, holds, fades away over {a.fade_out / 1000:.1f} s"
+          f"\nDanger: fades up over {a.danger_in / 1000:.1f} s, holds, fades away over {a.danger_out / 1000:.1f} s"
           f"\nworst-case draw {a.rows * a.width * a.led_ma / 1000:.1f} A, limited to {a.max_ma / 1000:.1f} A")
 
     if not a.apply:
@@ -173,7 +187,7 @@ def main():
 
     print(f"\nsending to {a.ip}")
     print("  cfg   ", post(a.ip, files["cfg-update.json"], "/json/cfg"))
-    for n, (name, body) in presets(a.rows, a.width, a.brightness).items():
+    for n, (name, body) in presets(a.rows, a.width, a.brightness, a.danger_in, a.danger_out).items():
         print(f"  preset {n} {name:18s}", post(a.ip, dict(body, psave=n, n=name, o=True, ib=True, sb=True)))
         time.sleep(1.5)
     print("\nUpload the palette by hand (Config -> Security & Updates -> Manual palette upload),")

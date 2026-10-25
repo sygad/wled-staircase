@@ -12,13 +12,13 @@ Explained in: parts/08-testing/README.md
 """
 import argparse, json, sys, time, urllib.request
 
-WARM, RED, GREEN, VIOLET = [255, 160, 60], [255, 0, 0], [0, 140, 0], [128, 0, 255]
+WARM, RED, GREEN, VIOLET = [255, 160, 60], [255, 0, 0], [0, 255, 0], [128, 0, 255]
 # preset -> (power on?, one full segment?, effect id, first colour)
 LIT = {4: (True, True, 153, GREEN), 5: (True, True, 139, None), 6: (True, True, 0, RED)}
-DARK = {1: WARM, 2: RED, 3: WARM, 7: [0, 0, 0]}
+DARK = {1: WARM, 2: RED, 3: WARM, 7: [0, 0, 0], 10: [0, 0, 0]}
 NAMES = {1: "Stairs Sweep", 2: "Stairs Rainbow", 3: "Stairs All", 4: "Stairs Matrix",
          5: "Stairs Disco", 6: "Stairs Danger", 7: "Stairs Off",
-         8: "zz Trigger Bottom", 9: "zz Trigger Top"}
+         8: "zz Trigger Bottom", 9: "zz Trigger Top", 10: "zz Danger Off"}
 
 passes = fails = 0
 
@@ -116,6 +116,9 @@ def main():
     for n, name in NAMES.items():
         check(stored.get(str(n), {}).get("n") == name, f"preset {n} is '{name}'",
               f"found {stored.get(str(n), {}).get('n')!r}")
+    tt_in, tt_out = stored.get("6", {}).get("tt"), stored.get("10", {}).get("tt")
+    check(tt_in == 2 and tt_out == 5, "Danger fades 0.2 s up, 0.5 s down (tt 2 and tt 5)",
+          f"preset 6 tt {tt_in!r}, preset 10 tt {tt_out!r} — Danger will snap on or off")
 
     if a.presets or a.sweep:
         print("\nEach preset, applied")
@@ -128,8 +131,9 @@ def main():
                 ok = not s["on"] and not [g for g in s["seg"] if g.get("on")]
                 check(ok, f"{n} {NAMES[n]}: dark, waiting for a trigger",
                       f"power {s['on']}, {len([g for g in s['seg'] if g.get('on')])} segments lit")
-                check(usermod_enabled(i) == (n != 7), f"{n} {NAMES[n]}: staircase logic "
-                      f"{'on' if n != 7 else 'off'}")
+                if n != 10:  # zz Danger Off deliberately carries no staircase block
+                    check(usermod_enabled(i), f"{n} {NAMES[n]}: staircase logic on",
+                          "the wall buttons would be dead")
                 if n in (1, 2):
                     check(len(s["seg"]) == a.rows, f"{n} {NAMES[n]}: {a.rows} row segments",
                           f"{len(s['seg'])}")

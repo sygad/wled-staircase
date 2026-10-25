@@ -1,6 +1,6 @@
 [← Part 5 · WLED settings](../05-wled-settings/README.md) · [All parts](../../README.md#the-parts) · [Part 7 · Home Assistant →](../07-home-assistant/README.md)
 
-# Part 6 · The nine presets
+# Part 6 · The ten presets
 
 The presets are the project's interface. Each one carries the whole picture —
 segments, colours, effect, master power, and whether the staircase logic is
@@ -25,10 +25,11 @@ running — so switching mode is one API call and nothing can end up half-applie
 | 3 | **Stairs All** | 1 full segment | Every step together: fades up over 0.5 s, holds 5 s, fades away over 2 s (patch P7) |
 | 4 | **Stairs Matrix** | 1 full segment | 2D effect **Matrix** (fx 153), green rain falling top → bottom. Runs continuously, ignores triggers |
 | 5 | **Stairs Disco** | 1 full segment | 2D effect **GEQ** (fx 139), bars rising from the bottom, custom palette. Runs continuously, ignores triggers |
-| 6 | **Stairs Danger** | 1 full segment | Solid red, everything lit. Used for five seconds at a time by Home Assistant |
-| 7 | **Stairs Off** | 1 full segment | Master power off, **staircase logic off** — so the buttons and sensors do nothing at all until another preset is applied |
+| 6 | **Stairs Danger** | 1 full segment | Solid red, everything lit. Used for five seconds at a time by Home Assistant. `"tt": 2` fades it up over 0.2 s |
+| 7 | **Stairs Off** | — | Master power off, but the **staircase logic stays on**, so the wall buttons still work. Carries no `seg` block, so it leaves the current mode's layout in place |
 | 8 | **zz Trigger Bottom** | — | `{"staircase": {"bottom-sensor": true}}`: the same as pressing the bottom button |
 | 9 | **zz Trigger Top** | — | `{"staircase": {"top-sensor": true}}`: the same as pressing the top button |
+| 10 | **zz Danger Off** | 1 full segment | Stairs Off with `"tt": 5`, so it fades to black over 0.5 s instead of cutting. How Danger finishes |
 
 The `zz` prefix keeps the two trigger presets at the end of the dropdown in
 Home Assistant and the WLED app, away from the ones you'd pick by hand.
@@ -98,19 +99,24 @@ bars fall back to the default palette.
    it currently has selected and drops the `staircase` block, which breaks both
    the rainbow and the mode switching. The generator script is the only thing
    that writes these presets.
-3. **Instant switching.** Every preset sets `"tt": 0`, so changing mode doesn't
-   fade one picture into another — it cuts.
+3. **Instant switching.** Every preset you pick by hand sets `"tt": 0`, so
+   changing mode doesn't fade one picture into another — it cuts. The two
+   exceptions are Danger's pair: a preset's `tt` is its own fade time, in units
+   of 100 ms, and it applies only to the call that loads it. Danger is applied
+   and cleared by Home Assistant rather than by the usermod, so it cannot use
+   the usermod's `fade-in-ms`/`fade-out-ms` the way All does (patch P7) — it
+   fades up with `"tt": 2` on preset 6 and away with `"tt": 5` on preset 10.
 4. **`"ib": true, "sb": true`** on all of them: include brightness and segment
    bounds, so a preset fully defines the state it wants instead of inheriting
    whatever was there before.
 
-> ⚠️ Never re-save presets 1–7 from the WLED UI. If you have, regenerate them:
+> ⚠️ Never re-save presets 1–7 or 10 from the WLED UI. If you have, regenerate them:
 > `python3 tools/make_staircase.py --rows 64 --width 8 --ip <ip> --apply`.
 
 ## Add just this part
 
 ```bash
-# generate and push presets 1-9
+# generate and push presets 1-10
 python3 tools/make_staircase.py --rows 64 --width 8 --ip <ip> --apply
 
 # the Disco palette (or use Config -> Security & Updates -> Manual palette upload)

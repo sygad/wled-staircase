@@ -45,22 +45,18 @@ sub_button:
     show_background: true
     tap_action:
       action: perform-action
-      perform_action: select.select_option
-      target:
-        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      perform_action: script.stairs_s3_software_trigger  # CHANGE: your own script
       data:
-        option: zz Trigger Top
+        direction: top
   - name: Bottom
     icon: mdi:stairs-up
     show_name: true
     show_background: true
     tap_action:
       action: perform-action
-      perform_action: select.select_option
-      target:
-        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      perform_action: script.stairs_s3_software_trigger  # CHANGE: your own script
       data:
-        option: zz Trigger Bottom
+        direction: bottom
   - entity: input_select.stairs_s3_mode
     sub_button_type: select
     icon: mdi:palette

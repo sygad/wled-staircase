@@ -12,7 +12,7 @@ switch the whole thing on and off cleanly, and "All" fades instead of snapping).
 The binary is here ready to flash,
 and so is everything needed to rebuild it.
 
-On top of that: six modes, nine presets, and three Home Assistant automations
+On top of that: six modes, ten presets, and three Home Assistant automations
 that decide when the stairs are live.
 
 🎮 **[Try the interactive demo](https://sygad.github.io/wled-staircase/)** — the dashboard card on the left, the
@@ -65,7 +65,7 @@ BUILD-WITH-AI.md                point your own AI at the repo and let it build i
 docs/index.html                 the interactive demo, served by GitHub Pages
 device/                         the exact backup from my controller
   cfg.json                        every WLED setting
-  presets.json                    presets 1-9, byte-for-byte
+  presets.json                    presets 1-10, byte-for-byte
   palette0.json                   the custom palette the Disco preset needs
 tools/
   make_staircase.py             generates the settings and presets for YOUR steps
@@ -75,8 +75,8 @@ parts/
   03-firmware/                  pre-built binaries + the build environment
   04-behaviour-patches/         the six patches that make the stairs behave
   05-wled-settings/             LED output, the 8x64 matrix, the usermod
-  06-presets/                   the nine presets, and what each one carries
-  07-home-assistant/            three helpers, three automations, two cards
+  06-presets/                   the ten presets, and what each one carries
+  07-home-assistant/            three helpers, three automations, a script, two cards
   08-testing/                   the two scripts that prove it works
 shared/                         five tricks several parts depend on
 images/                         the wiring diagram
@@ -105,7 +105,7 @@ images/                         the wiring diagram
 | 3 | [Firmware](parts/03-firmware/README.md) | A custom WLED 16.0.1 build: 64 segments, staircase + audioreactive usermods | [WLED](https://github.com/wled/WLED) 16.0.1 |
 | 4 | [The seven behaviour patches](parts/04-behaviour-patches/README.md) | P1–P7: sweep direction, hold timing, active-low buttons, clean preset switching, fades on All | WLED's Animated Staircase usermod |
 | 5 | [WLED settings](parts/05-wled-settings/README.md) | 512 LEDs as one 8 × 64 matrix, 26 A limit, 100 ms per step | WLED settings / JSON API |
-| 6 | [The nine presets](parts/06-presets/README.md) | Sweep, Rainbow, All, Matrix, Disco, Danger, Off and the two triggers | WLED presets |
+| 6 | [The ten presets](parts/06-presets/README.md) | Sweep, Rainbow, All, Matrix, Disco, Danger, Off, the two triggers and Danger's fade-out | WLED presets |
 | 7 | [Home Assistant](parts/07-home-assistant/README.md) | PIRs, day/night, mode dropdown, the red alarm flash, two dashboard cards | WLED integration, Bubble Card |
 | 8 | [Testing](parts/08-testing/README.md) | One script that reads the setup, one that drives every preset change | Python 3, no packages |
 
@@ -124,8 +124,8 @@ explained once in **[shared/README.md](shared/README.md)**.
 | **Rainbow** | The same sweep, each step a fixed colour: red at the bottom through to violet at the top |
 | **Matrix** | 2D green rain, falling top to bottom, continuously |
 | **Disco** | 2D graphic-equaliser bars rising from the bottom (sound-reactive once a microphone is fitted) |
-| **Danger** | Not a mode you pick: a top sensor while the alarm is armed turns everything red for five seconds, then puts the previous mode back |
-| **Off** | Dark, buttons dead |
+| **Danger** | Not a mode you pick: a top sensor while the alarm is armed fades everything up red over 0.2 s, holds five seconds, fades away over 0.5 s, then puts the previous mode back |
+| **Off** | Dark — but the wall buttons still work |
 
 **When it runs.** These are lights for the dark: Home Assistant only lets the
 stairs light between sunset and sunrise, worked out from `sun.sun` rather than a
@@ -249,11 +249,11 @@ Every Home Assistant file is marked up: **search for `CHANGE`**.
 | The bottom button lights the top of the stairs | The matrix is top-start, or the two GPIOs are swapped. Fix *first LED = bottom* in 2D Configuration |
 | The far end never lights | The on-time is shorter than the sweep — but on this firmware it shouldn't be, because patch P3 starts the hold after the sweep. Check you're running this build (`/json/info` → `"release":"ESP32-S3_Staircase"`) |
 | Rainbow shows all one colour | A preset was re-saved from the UI. Regenerate with `tools/make_staircase.py` |
-| Rows flash twice during the sweep | Not this firmware. The step-pacing and fade fixes ([Part 4](parts/04-behaviour-patches/README.md#9-three-fixes-for-64-segments-on-wled-16)) are in the `STAIRCASE_V2` build only |
-| Switching to Matrix or Disco plays an off-sweep first | Same: you're running a build without patch P6 |
+| Rows flash twice during the sweep | Not this firmware — check `/json/info` → `"release":"ESP32-S3_Staircase"`. The step-pacing and fade fixes are in [Part 4](parts/04-behaviour-patches/README.md#9-three-fixes-for-64-segments-on-wled-16) |
+| Switching to Matrix or Disco plays an off-sweep first | Same: that build is missing patch P6. Rebuild from [Part 4](parts/04-behaviour-patches/README.md) |
 | The top steps are dim or yellow | Voltage drop. Inject power at the far end |
 | The Disco bars are the wrong colours | `palette0.json` isn't on the controller. Upload it and reboot |
-| The wall buttons do nothing in daylight | By design, and the most confusing part of the build: outside the active window Home Assistant applies **Stairs Off**, which disables the staircase logic, and a disabled usermod ignores buttons, sensors and trigger presets alike. Switch **Moon** on to test out of hours — [Part 7](parts/07-home-assistant/README.md) |
+| The wall buttons do nothing | They should always work, in daylight too — **Stairs Off** parks the strip but leaves the staircase logic enabled. Check `/json/cfg` → `um.staircase.enabled` is `true`. The one case where they are deliberately dead is while **Matrix**, **Disco** or **Danger** is running — [Part 7](parts/07-home-assistant/README.md) |
 | Phone and Home Assistant triggers do nothing | Same cause, or you're in Matrix or Disco, where triggers are ignored by design |
 | All snaps on and off instead of fading | A build without patch P7, or `fade-in-ms` / `fade-out-ms` set to 0 |
 | The buttons stopped working after I saved a setting | A config was saved while the staircase logic was disabled, so `enabled: false` became the boot default. Switch Moon on, tick **enabled** in Config → Usermods, save again — [Part 5](parts/05-wled-settings/README.md) |

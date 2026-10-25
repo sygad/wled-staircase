@@ -1,4 +1,4 @@
-[← Part 6 · The nine presets](../06-presets/README.md) · [All parts](../../README.md#the-parts) · [Part 8 · Testing →](../08-testing/README.md)
+[← Part 6 · The ten presets](../06-presets/README.md) · [All parts](../../README.md#the-parts) · [Part 8 · Testing →](../08-testing/README.md)
 
 # Part 7 · Home Assistant
 
@@ -11,8 +11,8 @@ name.
 
 | | |
 |---|---|
-| **Built from** | the [WLED integration](https://www.home-assistant.io/integrations/wled/) (built in), three helpers, three automations, and [Bubble Card](https://github.com/Clooos/Bubble-Card) for the nicer card |
-| **Files in this folder** | `helpers.yaml` · `automation-pir-trigger.yaml` · `automation-danger.yaml` · `automation-apply-state.yaml` · `dashboard-bubble-card.yaml` · `dashboard-built-in-cards.yaml` |
+| **Built from** | the [WLED integration](https://www.home-assistant.io/integrations/wled/) (built in), three helpers, three automations, one script, and [Bubble Card](https://github.com/Clooos/Bubble-Card) for the nicer card |
+| **Files in this folder** | `helpers.yaml` · `automation-pir-trigger.yaml` · `automation-danger.yaml` · `automation-apply-state.yaml` · `script-software-trigger.yaml` · `dashboard-bubble-card.yaml` · `dashboard-built-in-cards.yaml` |
 | **Also needs** | two occupancy sensors (any kind Home Assistant can see), an `alarm_control_panel` for Danger only |
 | **Reads** | two PIRs, `sun.sun`, an alarm panel, a house-wide motion toggle |
 | **Writes** | `select.<your wled device>_preset` — nothing else |
@@ -46,27 +46,50 @@ whether they are live:
   winter afternoon, in a windowless stairwell, or to show somebody how it works.
   It **latches**, staying on until you switch it off, so it is not a timer and
   not a brightness setting.
-- **Power** is absolute, and sits above both. Off means Stairs Off, buttons
-  dead, and the mode reset to Sweep.
+- **Power** off means Stairs Off and the mode reset to Sweep. It stops everything
+  Home Assistant drives; it does not reach the wall buttons.
 - The **house motion toggle** (`input_boolean.motion_sensors` here) is my own
-  whole-house "ignore the sensors" switch. Delete that condition if you don't
-  have one.
+  whole-house "ignore the sensors" switch. It gates the **motion sensors only**.
+  Delete that condition if you don't have one.
 
-> ### ⚠️ Outside that window the buttons are dead, and that is deliberate
+### The three ways to trigger the stairs are gated differently
+
+This is the part worth getting right, and the original build got it wrong.
+
+| Path | Gated by |
+|---|---|
+| **The wall buttons** (GPIO 4/5) | **Nothing. They always work.** |
+| **The card's Top / Bottom buttons** | Power **and** (night **or** Moon) |
+| **The motion sensors** | Power **and** the house motion toggle **and** (night **or** Moon) |
+
+The wall buttons are the diagnostic fallback: they have to work with Home
+Assistant down, after a power cycle, in daylight. The controller cannot know the
+time of day or the state of the alarm on its own, so it never second-guesses a
+physical press. The card's buttons only exist while Home Assistant is up, so they
+respect its day/night window — and **Moon** overrides that for a test. The motion
+sensors additionally obey the house motion toggle, because "don't let motion
+switch lights on" is exactly what that switch means.
+
+> ### ⚠️ How this used to work, if you built an earlier version
 >
-> When the stairs aren't active, Home Assistant holds the controller on **Stairs
-> Off** — and that preset switches the staircase logic **off**. A disabled
-> usermod ignores *everything*: both wall buttons, both motion sensors and the
-> trigger presets alike. So in daylight, with Moon off, pressing the button at
-> the bottom of the stairs does nothing at all.
+> **Stairs Off** used to set the staircase logic **off**, and a disabled usermod
+> ignores *everything* — both wall buttons, both sensors and the trigger presets
+> alike. Since Home Assistant applies Stairs Off whenever the stairs aren't
+> active, the wall buttons were dead for most of the day. It sent me looking for
+> a wiring fault that didn't exist, twice.
 >
-> This is the most confusing thing in the build. It has already sent me looking
-> for a wiring fault that didn't exist.
+> The flag was never needed. The only inputs physically wired to the usermod are
+> the two buttons — the sensors are Zigbee and reach the controller only as
+> trigger presets that Home Assistant chooses to send, so the automations already
+> gate them. Disabling the logic added no gating and cost the one path that is
+> supposed to survive Home Assistant being down.
 >
-> **To test anything out of hours, switch Moon on first.** That holds the window
-> open, so Home Assistant leaves the stairs on a live preset and the buttons
-> answer again. Switch it off when you've finished. Without it you are measuring
-> a deaf device.
+> **Stairs Off now sets the logic `enabled: true`**, so it also repairs the flag
+> if Matrix, Disco or Danger left it off. Those three still switch it off while
+> they run, which is the one case where a wall button does nothing.
+>
+> If you are updating, regenerate preset 7:
+> `python3 tools/make_staircase.py --rows 64 --width 8 --ip <ip> --apply`.
 
 ## The three helpers
 
@@ -97,10 +120,21 @@ same as somebody pressing that button.
 ### 2 · Danger (`automation-danger.yaml`)
 
 Top PIR while the alarm is `armed_home` and the stairs are active → **Stairs
-Danger** (everything red), wait 5 s, then re-run automation 3 to put the previous
-mode back.
+Danger** (everything red), wait 5 s, **zz Danger Off** to fade the red away, then
+re-run automation 3 to put the previous mode back.
 
 - Visual only. No notification, by design.
+- **It fades, but faster than All: 0.2 s up and 0.5 s down**, because the point of
+  it is immediacy. Danger never goes through the usermod, so it can't use the
+  firmware's `fade-in-ms`/`fade-out-ms` (patch P7); the times are the two presets'
+  own transition times instead — `tt` 2 on Stairs Danger, `tt` 5 on zz Danger Off,
+  which is Stairs Off with a fade. Retune them in
+  [`tools/make_staircase.py`](../../tools/make_staircase.py)
+  (`--danger-in` / `--danger-out`), not here.
+- The 5 s hold starts when the fade-in **begins**, so the ramp counts towards the
+  five seconds — the same convention patch P7 uses for All. The 600 ms delay after
+  the fade-out exists so the fade finishes before automation 3 applies the next
+  preset on top of it.
 - It overrides Matrix and Disco, and it still obeys Power, the time window and
   the motion toggle.
 - **Mode: `single`, `max_exceeded: silent`.** Somebody repeatedly tripping the
@@ -129,6 +163,19 @@ when the controller comes back from `unavailable`.
 - The `from: unavailable` trigger is what re-applies everything after a power cut
   at the controller — it boots into Sweep on its own, then Home Assistant puts
   the real mode back.
+
+## The script
+
+### `script-software-trigger.yaml`
+
+The card's **Top** / **Bottom** buttons call this rather than selecting the
+trigger preset directly, which is what gives them their own gate: Power, and
+night-or-Moon. It takes one field, `direction` (`top` or `bottom`).
+
+It deliberately does **not** check the house motion toggle — see
+[the three paths](#the-three-ways-to-trigger-the-stairs-are-gated-differently)
+above. Without this script the card buttons would fire in broad daylight, which
+is the one thing the day/night rule is there to prevent.
 
 ## The cards
 
@@ -166,12 +213,14 @@ directly, so they work even if the automations are disabled.
    can otherwise go unavailable.
 3. Create the three helpers from `helpers.yaml` (Settings → Devices & services →
    Helpers, or paste the YAML into `configuration.yaml`).
-4. For each of the three automations: Settings → Automations → **Create new** →
+4. Add the script: Settings → Automations & scenes → Scripts → **Add script** → ⋮ →
+   **Edit in YAML**, paste `script-software-trigger.yaml`.
+5. For each of the three automations: Settings → Automations → **Create new** →
    ⋮ → **Edit in YAML**, paste the file, then fix every `# CHANGE:` line to point
    at your own entities.
-5. Add one of the two cards to a dashboard. Start it in a scratch view, as I did,
+6. Add one of the two cards to a dashboard. Start it in a scratch view, as I did,
    before putting it on a real page.
-6. Check it: flip Power off and on, change the mode, and watch
+7. Check it: flip Power off and on, change the mode, and watch
    `select.<device>_preset` follow. The stairs themselves shouldn't light at all
    while you do that — the preset only sets the stage.
 
@@ -180,4 +229,4 @@ get the mode dropdown, the day/night rule and the dashboard buttons.
 
 ---
 
-[← Part 6 · The nine presets](../06-presets/README.md) · [All parts](../../README.md#the-parts) · [Part 8 · Testing →](../08-testing/README.md)
+[← Part 6 · The ten presets](../06-presets/README.md) · [All parts](../../README.md#the-parts) · [Part 8 · Testing →](../08-testing/README.md)
