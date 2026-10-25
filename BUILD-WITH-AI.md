@@ -188,7 +188,7 @@ Every line must pass. Then concrete checks you cannot script, asked as questions
 - Tap `zz Trigger Bottom` in WLED: does the **bottom** step light first?
 - Press each button: does it sweep from the end you pressed?
 - Does every step light before the sweep turns around?
-- In Home Assistant, switch Power off: does the preset select show **Stairs Off**?
+- In Home Assistant, with the sun up and Night mode off: does the preset select show **Stairs Off**?
 - Switch the mode: does the select follow within a second?
 
 If they changed the patches, offer `preset_matrix.py` and explain it drives the

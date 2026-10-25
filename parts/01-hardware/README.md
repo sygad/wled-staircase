@@ -33,8 +33,8 @@ cheaper option.
 | Controller | **diymore ESP32-S3 DevKitC-1 N16R8** — 16 MB flash, 8 MB octal PSRAM, USB-C | WLED only allows more than 32 segments on a board with PSRAM, and 64 steps needs 64 segments. The S3 also has the headroom for 2D effects and, later, a microphone |
 | LEDs | **Two 32 × 8 WS2812B panels**, chained into one 8 × 64 matrix: 512 LEDs | A panel row is a tidy stand-in for a step: 8 LEDs wide, addressable as a block. On real stairs this is one short strip per step, wired as one long chain |
 | Power | **5 V 30 A** supply, feeding the panels at both ends | 512 LEDs at full white is about 28 A. See [Power: one source at a time](../../shared/README.md#power-one-source-at-a-time) |
-| Triggers | **2 × momentary push buttons** (bottom and top), to GND, no resistors | The firmware uses the ESP32's internal pull-ups, so a press pulls the pin low. Patch P4 in [Part 4](../04-behaviour-patches/README.md) |
-| Motion | **Zigbee PIRs already in Home Assistant** | They never touch the ESP32. Home Assistant turns a PIR into a preset selection, so the sensors can be any kind Home Assistant can see |
+| Diagnostics | **2 × momentary push buttons** (bottom and top), to GND, no resistors | **Not how the stairs are used.** They override every condition and exist to prove the controller and the LEDs work — see [Part 2](../02-wiring/README.md#the-two-buttons-are-a-diagnostic). The firmware uses the ESP32's internal pull-ups, so a press pulls the pin low. Patch P4 in [Part 4](../04-behaviour-patches/README.md) |
+| **Triggers** | **2 × Zigbee PIRs already in Home Assistant**, one at each end | **This is how the stairs are actually used.** They never touch the ESP32: Home Assistant turns a PIR into a preset selection, so the sensors can be any kind Home Assistant can see |
 | Microphone | **INMP441 I2S** — specified, **not fitted yet** | Only the Disco preset wants it. The firmware is already built with `audioreactive` and the pins are set, so fitting it later needs no rebuild |
 
 A classic ESP32 will not do this build: without PSRAM, WLED caps segments at 32,

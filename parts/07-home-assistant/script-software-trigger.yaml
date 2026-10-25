@@ -4,18 +4,20 @@
 # Needs: presets 8 (zz Trigger Bottom) and 9 (zz Trigger Top)
 # Search this file for CHANGE and swap in your own entity IDs.
 #
-# Why this exists rather than the cards calling the preset directly: the three
-# trigger paths are gated differently. The hardware buttons always work, the motion
-# sensors obey the house motion toggle, and these card buttons sit in between —
-# they only exist while Home Assistant is up, so they respect Power and the
-# day/night window, but NOT the motion toggle, which is about motion only.
+# Why this exists rather than the cards calling the preset directly: the four ways
+# in are gated differently. The hardware buttons always work, the motion sensors
+# obey the house motion toggle, Danger answers to the alarm alone, and these card
+# buttons sit in between - they only exist while Home Assistant is up, so they
+# respect the day/night window, but NOT the motion toggle, which is about motion.
 
 alias: Staircase v2 – Software trigger
 description: >-
-  Gate for the dashboard Top/Bottom buttons. Respects Power and the day/night
-  window (overridable with Moon). Deliberately does not check the house motion
-  toggle: that gates the motion sensors only. The hardware buttons on the controller
-  bypass Home Assistant entirely and always work.
+  Gate for the dashboard Top/Bottom buttons. Top while the alarm is armed home
+  hands over to the Danger automation, before any other check. Otherwise it
+  respects the day/night window (overridable with Night mode). Deliberately does
+  not check the house motion toggle: that gates the motion sensors only. The
+  hardware buttons on the controller bypass Home Assistant entirely and always
+  work.
 mode: queued
 max: 4
 
@@ -31,10 +33,24 @@ fields:
           - bottom
 
 sequence:
-  - condition: state
-    entity_id: input_boolean.stairs_s3_power   # CHANGE: your own helper
-    state: "on"
-    note: Power stops everything Home Assistant drives.
+  - alias: 'Top button while the alarm is armed: hand over to Danger'
+    if:
+      - condition: template
+        value_template: "{{ direction == 'top' }}"
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm   # CHANGE: your own entity
+        state: armed_home
+    then:
+      - action: automation.trigger
+        target:
+          entity_id: automation.staircase_v2_danger
+        data:
+          skip_condition: false
+      - stop: Danger owns the stairs for the next five seconds
+    note: >-
+      First, and above the day/night check, because Danger outranks everything.
+      Without this the card button could never produce Danger - only the Zigbee
+      top PIR could, which makes Danger impossible to test from the card.
 
   - condition: or
     conditions:
@@ -44,7 +60,7 @@ sequence:
       - condition: state
         entity_id: input_boolean.stairs_s3_moon   # CHANGE: your own helper
         state: "on"
-    note: Night, or Moon held on to override daylight for a test.
+    note: Night, or Night mode held on to override daylight for a test.
 
   - action: select.select_option
     target:

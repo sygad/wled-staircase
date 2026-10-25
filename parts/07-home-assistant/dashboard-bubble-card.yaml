@@ -1,4 +1,4 @@
-# Staircase v2 · The Bubble Card control: Power, Moon, Top, Bottom and the mode dropdown
+# Staircase v2 · The Bubble Card control: Night mode, Top, Bottom and the mode dropdown
 # Explained in: parts/07-home-assistant/README.md
 # Paste into: a dashboard section → ⋮ → Edit in YAML (add card → Manual)
 # Needs: Bubble Card v3.x from HACS
@@ -25,15 +25,9 @@ button_action:
 sub_button:
   main:
   - entity: input_boolean.stairs_s3_moon
-    name: Moon
+    name: Night mode
     icon: mdi:weather-night
-    show_background: true
-    state_background: true
-    tap_action:
-      action: toggle
-  - entity: input_boolean.stairs_s3_power
-    name: Power
-    icon: mdi:power
+    show_name: true
     show_background: true
     state_background: true
     tap_action:

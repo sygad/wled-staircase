@@ -5,11 +5,10 @@
 # Search this file for CHANGE and swap in your own entity IDs.
 
 alias: Staircase v2 – Apply state
-description: 'Puts WLED Staircase v2 into the right preset whenever Power, Moon, mode or day/night change, when HA starts, and when the controller comes back online. The house motion toggle is not involved - it gates the motion sensors only.'
+description: 'Puts WLED Staircase v2 into the right preset whenever Night mode, the mode or day/night change, when HA starts, and when the controller comes back online. The house motion toggle is not involved - it gates the motion sensors only, in the PIR automation.'
 triggers:
 - trigger: state
   entity_id:
-  - input_boolean.stairs_s3_power
   - input_boolean.stairs_s3_moon
   to:
   - 'on'
@@ -35,22 +34,6 @@ triggers:
 conditions: []
 actions:
 - choose:
-  - alias: 'Power off: everything off, mode back to Sweep'
-    conditions:
-    - condition: state
-      entity_id: input_boolean.stairs_s3_power
-      state: 'off'
-    sequence:
-    - action: select.select_option
-      target:
-        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
-      data:
-        option: Stairs Off
-    - action: input_select.select_option
-      target:
-        entity_id: input_select.stairs_s3_mode
-      data:
-        option: Sweep
   - alias: 'Matrix or Disco: run whenever selected, day or night'
     conditions:
     - condition: state
@@ -66,8 +49,8 @@ actions:
         option: Stairs {{ states('input_select.stairs_s3_mode') }}
       note: >-
         The fun ones are not day/night aware and not trigger aware: selecting
-        them runs them. Power off still wins, because it is the branch above.
-  - alias: 'Daylight without Moon: off'
+        them runs them. Pick another mode to stop one.
+  - alias: 'Daylight without Night mode: off'
     conditions:
     - condition: state
       entity_id: sun.sun

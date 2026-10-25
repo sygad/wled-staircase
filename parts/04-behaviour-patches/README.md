@@ -1,10 +1,14 @@
 [← Part 3 · Firmware](../03-firmware/README.md) · [All parts](../../README.md#the-parts) · [Part 5 · WLED settings →](../05-wled-settings/README.md)
 
-# Part 4 · The seven behaviour patches
+# Part 4 · The behaviour patches
 
 Everything that makes the stairs behave the way they should, rather than the way
-the stock usermod behaves. Seven numbered changes, P1 to P7, plus the WLED 16
-refinements that stop a 64-segment sweep from stuttering.
+the stock usermod behaves. Eight numbered changes — P1 to P7 and P9 — plus the
+WLED 16 refinements that stop a 64-segment sweep from stuttering.
+
+> The numbering skips P8 because that change turned out not to need firmware:
+> Danger's fades come from the two presets' own transition times
+> ([Part 6](../06-presets/README.md)), not from the usermod.
 
 ## At a glance
 
@@ -15,7 +19,7 @@ refinements that stop a 64-segment sweep from stuttering.
 | **Applies to** | a clean WLED 16.0.1 checkout: `git apply patches/*.patch` |
 | **Proved by** | the preset-to-preset test in [Part 8](../08-testing/README.md) |
 
-## The seven patches
+## The patches
 
 | # | What it does |
 |---|---|
@@ -23,11 +27,12 @@ refinements that stop a 64-segment sweep from stuttering.
 | P2 | The off-sweep runs in the direction of the latest trigger |
 | P3 | The on-time starts when the sweep finishes, not when the button is pressed |
 | P4 | Trigger inputs are active-low: a button to ground, no resistors |
-| P5 | While the stairs are lit, the opposite sensor is ignored |
+| P5 | While the stairs are lit, the opposite sensor is ignored — except in the All layout |
 | P6 | Presets can switch the staircase logic on and off cleanly |
 | P7 | "All" fades up quickly and down slowly, instead of snapping |
+| P9 | Master power comes back on from brightness, so a trigger during a fade-out still lights the stairs |
 
-All seven are unconditional. P4 is the one to be aware of if you adapt this
+All of them are unconditional. P4 is the one to be aware of if you adapt this
 elsewhere: it inverts the trigger polarity, so it expects a button to ground
 rather than a PIR pulling the pin high.
 
@@ -117,6 +122,11 @@ if (topSensorRead != bottomSensorRead && on && bottomSensorRead != lastSensor)
 The sensor that started the sweep still counts: trip it again and the hold
 restarts, so lingering on the stairs keeps the lights on.
 
+**The All layout is exempt**, via the `!singleStep()` guard in the condition
+above. All lights every step together, so "direction" means nothing there — and
+ignoring the far end only made that button look broken for the seven seconds an
+All cycle lasts. In All, either trigger restarts the hold.
+
 ### 6. P6 · Presets that switch the logic on and off cleanly
 
 The biggest one, and the one that needed the most testing. Six presets switch the
@@ -204,7 +214,31 @@ gets the same soft start and finish from the presets' own transition times —
 of it is immediacy. See [Part 6](../06-presets/README.md#the-presets) and
 [Part 7](../07-home-assistant/README.md).
 
-### 8. The latent bug P7 flushed out
+### 8. P9 · Power back up during a fade-out
+
+The twin of the bug below, and the one that took the longest to find. The
+usermod turns master power on when a trigger arrives and the strip is off:
+
+```c
+// P9: power back on whenever the master brightness is zero, not just when WLED has
+// finished going dark.
+if (togglePower && onIndex == offIndex && !bri) toggleOnOff();
+```
+
+That test used to read `offMode` instead of `!bri`. **`offMode` only becomes true
+once WLED has finished fading to black** — two seconds in the All layout. Trigger
+the stairs inside that window and the usermod accepted it, swept the segments,
+and left master power off: the staircase stayed completely dark and the button
+looked dead. Press it again and the same thing happened.
+
+Only All showed it in practice. Sweep and Rainbow fade out in 100 ms, so the
+window is too small to land in. In All, a press one second after the previous
+cycle ended hit it every time.
+
+`bri` is the right test because `toggleOnOff()` zeroes it immediately, so it is
+true from the instant the power-off starts rather than when the fade finishes.
+
+### 9. The latent bug P7 flushed out
 
 Worth knowing if you adapt this usermod. The power-off guard from the fixes below
 waited `2 * segment_delay_ms` — 200 ms here — after the final step before cutting
@@ -221,7 +255,7 @@ unsigned long fadeOutSettle() {
 The bug had been there since the fade fix was written; nothing had ever asked for
 a slow fade, so nothing had ever shown it up.
 
-### 9. Three fixes for 64 segments on WLED 16
+### 10. Three fixes for 64 segments on WLED 16
 
 None of them changes behaviour on paper; all three were visible on the stairs.
 

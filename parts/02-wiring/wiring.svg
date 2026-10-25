@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 780" preserveAspectRatio="xMidYMid meet" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
-  <title>WLED Staircase v2 wiring: ESP32-S3, 8x64 matrix, two buttons</title>
+  <title>WLED Staircase v2 wiring: ESP32-S3, 8x64 matrix, two diagnostic buttons</title>
   <defs>
     <g id="button">
       <rect x="-20" y="-20" width="40" height="40" rx="6" fill="#455a64" stroke="#263238" stroke-width="2"/>
@@ -106,6 +106,14 @@
   <text x="415" y="628" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">USB or the 5 V supply,</text>
   <text x="415" y="644" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">never both at once</text>
 
+  <!-- ===== Diagnostic-only callout: these buttons are not the way the stairs are used ===== -->
+  <rect x="648" y="206" width="444" height="110" rx="10" fill="#fff8e1" stroke="#f9a825" stroke-width="2"/>
+  <text x="670" y="230" font-size="14" font-weight="700" fill="#e65100">Both buttons are DIAGNOSTIC ONLY</text>
+  <text x="670" y="250" font-size="12" fill="#4e342e">They override everything: day or night, the house motion toggle,</text>
+  <text x="670" y="266" font-size="12" fill="#4e342e">the alarm, Home Assistant being down. Their only job is to prove</text>
+  <text x="670" y="282" font-size="12" fill="#4e342e">the controller and the LEDs still work. Rarely used, locked away.</text>
+  <text x="670" y="304" font-size="12.5" font-weight="700" fill="#2e7d32">The PIR sensors drive the stairs — Zigbee, nothing wired here.</text>
+
   <!-- ===== Buttons ===== -->
   <use href="#button" x="760" y="360"/>
   <text x="790" y="340" font-size="14" font-weight="700" fill="#1565c0">TOP button</text>
@@ -134,5 +142,5 @@
     <line x1="370" y1="750" x2="400" y2="750" stroke="#1565c0"/><text x="408" y="755" stroke="none">Top trigger</text>
     <line x1="505" y1="750" x2="535" y2="750" stroke="#8e24aa"/><text x="543" y="755" stroke="none">Bottom trigger</text>
   </g>
-  <text x="1080" y="755" text-anchor="end" font-size="12" fill="#546e7a">Pressing a button connects its GPIO to ground</text>
+  <text x="1080" y="755" text-anchor="end" font-size="12" fill="#546e7a">Pressing a button connects its GPIO to ground · more buttons need their own GPIOs</text>
 </svg>

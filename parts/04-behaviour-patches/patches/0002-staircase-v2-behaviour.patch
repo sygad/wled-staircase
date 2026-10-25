@@ -1,8 +1,8 @@
 diff --git a/usermods/Animated_Staircase/Animated_Staircase.cpp b/usermods/Animated_Staircase/Animated_Staircase.cpp
-index 2d2d27c..c9f9a1c 100644
+index 2d2d27c..0e10099 100644
 --- a/usermods/Animated_Staircase/Animated_Staircase.cpp
 +++ b/usermods/Animated_Staircase/Animated_Staircase.cpp
-@@ -9,6 +9,15 @@
+@@ -9,6 +9,17 @@
   */
  #include "wled.h"
  
@@ -11,14 +11,16 @@ index 2d2d27c..c9f9a1c 100644
 +//  P2 the off-sweep follows the direction of the latest trigger
 +//  P3 on-time counts from the end of the on-sweep
 +//  P4 active-low trigger inputs (INPUT_PULLUP, LOW = triggered)
-+//  P5 while on, the opposite sensor is ignored
++//  P5 while on, the opposite sensor is ignored (except in the All layout)
 +//  P6 enable/disable from presets never toggles master power and never plays an off-sweep
 +//  P7 asymmetric fade when the whole staircase lights as one step (the All layout)
++//  P9 power comes back on from brightness, not WLED's offMode, so a trigger during the
++//     fade-out still lights the staircase
 +
  class Animated_Staircase : public Usermod {
    private:
  
-@@ -25,6 +34,10 @@ class Animated_Staircase : public Usermod {
+@@ -25,6 +36,10 @@ class Animated_Staircase : public Usermod {
      unsigned int topMaxDist        = 50;    // default maximum measured distance in cm, top
      unsigned int bottomMaxDist     = 50;    // default maximum measured distance in cm, bottom
      bool togglePower               = false; // toggle power on/off with staircase on/off
@@ -29,7 +31,7 @@ index 2d2d27c..c9f9a1c 100644
  
      /* runtime variables */
      bool initDone = false;
-@@ -56,6 +69,9 @@ class Animated_Staircase : public Usermod {
+@@ -56,6 +71,9 @@ class Animated_Staircase : public Usermod {
      // Last time the lights were switched on or off
      unsigned long lastSwitchTime = 0;
  
@@ -39,7 +41,7 @@ index 2d2d27c..c9f9a1c 100644
      // segment id between onIndex and offIndex are on.
      // controll the swipe by setting/moving these indices around.
      // onIndex must be less than or equal to offIndex
-@@ -82,6 +98,8 @@ class Animated_Staircase : public Usermod {
+@@ -82,6 +100,8 @@ class Animated_Staircase : public Usermod {
      static const char _enabled[];
      static const char _segmentDelay[];
      static const char _onTime[];
@@ -48,7 +50,7 @@ index 2d2d27c..c9f9a1c 100644
      static const char _useTopUltrasoundSensor[];
      static const char _topPIRorTrigger_pin[];
      static const char _topEcho_pin[];
-@@ -120,8 +138,11 @@ class Animated_Staircase : public Usermod {
+@@ -120,8 +140,11 @@ class Animated_Staircase : public Usermod {
          //seg.setOption(SEG_OPTION_TRANSITIONAL, true); // not needed anymore as setOption() does it
        }
        strip.trigger();  // force strip refresh
@@ -62,7 +64,7 @@ index 2d2d27c..c9f9a1c 100644
      }
  
      /*
-@@ -156,6 +177,19 @@ class Animated_Staircase : public Usermod {
+@@ -156,6 +179,19 @@ class Animated_Staircase : public Usermod {
        return pulseIn(echoPin, HIGH, maxTimeUs) > 0;
      }
  
@@ -82,7 +84,7 @@ index 2d2d27c..c9f9a1c 100644
      bool checkSensors() {
        bool sensorChanged = false;
  
-@@ -164,12 +198,12 @@ class Animated_Staircase : public Usermod {
+@@ -164,12 +200,12 @@ class Animated_Staircase : public Usermod {
  
          bottomSensorRead = bottomSensorWrite ||
            (!useUSSensorBottom ?
@@ -97,26 +99,34 @@ index 2d2d27c..c9f9a1c 100644
              ultrasoundRead(topPIRorTriggerPin, topEchoPin, topMaxDist*59)   // cm to us
            );
  
-@@ -191,12 +225,15 @@ class Animated_Staircase : public Usermod {
+@@ -191,13 +227,22 @@ class Animated_Staircase : public Usermod {
          topSensorWrite = false;
          bottomSensorWrite = false;
  
-+        // P5: while on, only the sensor that started it counts (it restarts the on-timer)
-+        if (topSensorRead != bottomSensorRead && on && bottomSensorRead != lastSensor) return sensorChanged;
++        // P5: while on, only the sensor that started it counts (it restarts the on-timer).
++        // Except in the All layout (singleStep), where every step lights together: direction
++        // means nothing there, so ignoring the far sensor would only make its button look dead.
++        if (!singleStep() && topSensorRead != bottomSensorRead && on && bottomSensorRead != lastSensor) return sensorChanged;
          if (topSensorRead != bottomSensorRead) {
            lastSwitchTime = millis();
  
 -          if (on) {
 -            lastSensor = topSensorRead;
 -          } else {
+-            if (togglePower && onIndex == offIndex && offMode) toggleOnOff(); // toggle power on if off
 +          // Remember the direction of the latest trigger so the OFF swipe follows the ON swipe
 +          // (bottom trigger: on and off both run bottom -> top; top trigger: both run top -> bottom)
 +          lastSensor = bottomSensorRead;
 +          if (!on) {
-             if (togglePower && onIndex == offIndex && offMode) toggleOnOff(); // toggle power on if off
++            // P9: power back on whenever the master brightness is zero, not just when WLED has
++            // finished going dark. offMode only turns true once the power-off fade has completed,
++            // which is 2 s in the All layout, so a trigger inside that window used to sweep the
++            // segments with the master still off and the staircase stayed dark.
++            if (togglePower && onIndex == offIndex && !bri) toggleOnOff(); // toggle power on if off
              // If the bottom sensor triggered, we need to swipe up, ON
              swipe = bottomSensorRead;
-@@ -213,6 +250,8 @@ class Animated_Staircase : public Usermod {
+ 
+@@ -213,6 +258,8 @@ class Animated_Staircase : public Usermod {
                }
                offIndex = onIndex;
              }
@@ -125,7 +135,7 @@ index 2d2d27c..c9f9a1c 100644
              on = true;
            }
          }
-@@ -221,12 +260,15 @@ class Animated_Staircase : public Usermod {
+@@ -221,12 +268,15 @@ class Animated_Staircase : public Usermod {
      }
  
      void autoPowerOff() {
@@ -141,7 +151,7 @@ index 2d2d27c..c9f9a1c 100644
          on = false;
  
          DEBUG_PRINT(F("OFF -> Swipe "));
-@@ -236,7 +278,8 @@ class Animated_Staircase : public Usermod {
+@@ -236,7 +286,8 @@ class Animated_Staircase : public Usermod {
  
      void updateSwipe() {
        if ((millis() - lastTime) > segment_delay_ms) {
@@ -151,7 +161,7 @@ index 2d2d27c..c9f9a1c 100644
  
          byte oldOn  = onIndex;
          byte oldOff = offIndex;
-@@ -252,10 +295,17 @@ class Animated_Staircase : public Usermod {
+@@ -252,10 +303,17 @@ class Animated_Staircase : public Usermod {
            }
          }
          if (oldOn != onIndex || oldOff != offIndex) {
@@ -170,7 +180,7 @@ index 2d2d27c..c9f9a1c 100644
      }
  
      // send sensor values to JSON API
-@@ -297,19 +347,22 @@ class Animated_Staircase : public Usermod {
+@@ -297,19 +355,22 @@ class Animated_Staircase : public Usermod {
  
          // shorten the strip transition time to be equal or shorter than segment delay
          transitionDelay = segment_delay_ms;
@@ -204,7 +214,7 @@ index 2d2d27c..c9f9a1c 100644
          DEBUG_PRINTLN(F("Animated Staircase disabled."));
        }
        enabled = enable;
-@@ -413,11 +466,15 @@ class Animated_Staircase : public Usermod {
+@@ -413,11 +474,15 @@ class Animated_Staircase : public Usermod {
        if (!staircase.isNull()) {
          if (staircase[FPSTR(_enabled)].is<bool>()) {
            en = staircase[FPSTR(_enabled)].as<bool>();
@@ -221,7 +231,7 @@ index 2d2d27c..c9f9a1c 100644
          readSensorsFromJson(staircase);
          DEBUG_PRINTLN(F("Staircase sensor state read from API."));
        }
-@@ -442,6 +499,8 @@ class Animated_Staircase : public Usermod {
+@@ -442,6 +507,8 @@ class Animated_Staircase : public Usermod {
        staircase[FPSTR(_enabled)]                   = enabled;
        staircase[FPSTR(_segmentDelay)]              = segment_delay_ms;
        staircase[FPSTR(_onTime)]                    = on_time_ms / 1000;
@@ -230,7 +240,7 @@ index 2d2d27c..c9f9a1c 100644
        staircase[FPSTR(_useTopUltrasoundSensor)]    = useUSSensorTop;
        staircase[FPSTR(_topPIRorTrigger_pin)]       = topPIRorTriggerPin;
        staircase[FPSTR(_topEcho_pin)]               = useUSSensorTop ? topEchoPin : -1;
-@@ -480,7 +539,11 @@ class Animated_Staircase : public Usermod {
+@@ -480,7 +547,11 @@ class Animated_Staircase : public Usermod {
        segment_delay_ms = (unsigned long) min((unsigned long)10000,max((unsigned long)10,(unsigned long)segment_delay_ms));  // max delay 10s
  
        on_time_ms = top[FPSTR(_onTime)] | on_time_ms/1000;
@@ -243,7 +253,7 @@ index 2d2d27c..c9f9a1c 100644
  
        useUSSensorTop     = top[FPSTR(_useTopUltrasoundSensor)] | useUSSensorTop;
        topPIRorTriggerPin = top[FPSTR(_topPIRorTrigger_pin)] | topPIRorTriggerPin;
-@@ -552,6 +615,8 @@ const char Animated_Staircase::_name[]                      PROGMEM = "staircase
+@@ -552,6 +623,8 @@ const char Animated_Staircase::_name[]                      PROGMEM = "staircase
  const char Animated_Staircase::_enabled[]                   PROGMEM = "enabled";
  const char Animated_Staircase::_segmentDelay[]              PROGMEM = "segment-delay-ms";
  const char Animated_Staircase::_onTime[]                    PROGMEM = "on-time-s";

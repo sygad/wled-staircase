@@ -11,6 +11,11 @@
 Five wires and two buttons. The only things that bite are the common ground, the
 two 5 V sources, and which end of the chain the data goes in.
 
+**Nothing here is how the stairs are normally triggered.** That is the two Zigbee
+PIRs, which never touch this board — they reach the controller through Home
+Assistant ([Part 7](../07-home-assistant/README.md)). The two buttons are a
+diagnostic, described below.
+
 ## At a glance
 
 | | |
@@ -18,7 +23,7 @@ two 5 V sources, and which end of the chain the data goes in.
 | **Built from** | the parts in [Part 1](../01-hardware/README.md) |
 | **Files in this folder** | `wiring.svg` (the diagram above) |
 | **Also needs** | nothing |
-| **Uses** | GPIO 12 (LED data), GPIO 4 (bottom button), GPIO 5 (top button), GND, and GPIO 13/14/15 reserved for the microphone |
+| **Uses** | GPIO 12 (LED data), GPIO 4 (bottom diagnostic button), GPIO 5 (top diagnostic button), GND, and GPIO 13/14/15 reserved for the microphone |
 | **Explains** | why there are no resistors, and why USB and the 5 V supply must never be connected together |
 
 ## The connections
@@ -40,9 +45,34 @@ long run. This build works without it; add it if you see random flicker.
 - **GPIO 12 for data.** Free on the S3, not a strapping pin, and away from the
   pins the USB-serial and PSRAM use.
 - **GPIO 4 and 5 for the buttons.** Adjacent, free, and both safe to pull low at
-  boot.
+  boot. The usermod has exactly these two inputs, so **any further buttons need
+  their own GPIOs** and their own handling — see below.
 - **GPIO 13 / 14 / 15 reserved** for the microphone's SCK / WS / SD, so fitting
   it later doesn't move anything.
+
+## The two buttons are a diagnostic
+
+On this prototype the buttons are **not a control**. They are two momentary
+switches on the controller itself, locked away, used perhaps twice a year.
+
+**They override everything.** Daylight, the house motion toggle, the alarm, and
+Home Assistant being down or Zigbee having dropped — none of it reaches them,
+because the wire goes straight to the GPIO. Their one job is to answer a single
+question with no dependencies: *are the controller and the LEDs still working?*
+That is why they are deliberately ungated, and why the firmware never
+second-guesses a physical press.
+
+**The PIRs are the real interface.** Walking up or down is what lights the
+stairs. Everything else in this project — the sensors, the card buttons, the
+modes, Danger — is described in [Part 7](../07-home-assistant/README.md); the
+four ways in and how each one is gated are in
+[that part's table](../07-home-assistant/README.md#the-four-ways-in-gated-differently).
+
+**If you want real wall switches**, treat these two as taken and wire yours to
+**additional GPIOs**. The usermod reads one bottom pin and one top pin and
+nothing else, so extra switches need either their own handling in the firmware or
+— far easier — a Zigbee or Wi-Fi button that Home Assistant can turn into a
+preset selection, exactly as it already does for the PIRs.
 
 ## Why there are no resistors
 

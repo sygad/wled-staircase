@@ -1,25 +1,17 @@
 # Staircase v2 · The same controls with built-in cards only (no HACS)
 # Explained in: parts/07-home-assistant/README.md
-# Paste into: a dashboard section, as five separate manual cards
+# Paste into: a dashboard section, as four separate manual cards
 # Needs: nothing beyond Home Assistant itself
 # Search this file for CHANGE and swap in your own entity IDs.
 
 - type: tile
   entity: input_boolean.stairs_s3_moon
-  name: Moon
+  name: Night mode
   icon: mdi:weather-night
   tap_action:
     action: toggle
   grid_options:
-    columns: 6
-- type: tile
-  entity: input_boolean.stairs_s3_power
-  name: Power
-  icon: mdi:power
-  tap_action:
-    action: toggle
-  grid_options:
-    columns: 6
+    columns: 12
 - type: button
   name: Top
   icon: mdi:stairs-down

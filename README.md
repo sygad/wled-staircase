@@ -1,12 +1,13 @@
 # WLED Staircase
 
 Stair lights that fill one step at a time as you walk in, hold while you're on
-the stairs, then empty the way you came.
+the stairs, then empty the way you came. A **PIR at each end** is what sets them
+off — the two buttons on the controller are a diagnostic, not a control.
 
 The sweep isn't a WLED effect — it's WLED's **Animated Staircase usermod**, which
 isn't in any stock WLED download, so the firmware has to be built. This repo
 hands you that build: an **ESP32-S3** running **WLED 16.0.1** with the usermod
-and **seven patches** that fix how it behaves (the off-sweep follows you, the
+and **eight patches** that fix how it behaves (the off-sweep follows you, the
 hold starts when the sweep finishes, buttons wire straight to ground, presets
 switch the whole thing on and off cleanly, and "All" fades instead of snapping).
 The binary is here ready to flash,
@@ -90,7 +91,7 @@ images/                         the wiring diagram
 | Have an AI build it for me | [BUILD-WITH-AI.md](BUILD-WITH-AI.md) |
 | Build all of it myself | [Quick start](#quick-start) |
 | Take just one part | [The parts](#the-parts): open that part's folder |
-| Understand the firmware changes | [Part 4 · The seven behaviour patches](parts/04-behaviour-patches/README.md) |
+| Understand the firmware changes | [Part 4 · The behaviour patches](parts/04-behaviour-patches/README.md) |
 
 ---
 
@@ -103,7 +104,7 @@ images/                         the wiring diagram
 | 1 | [Hardware](parts/01-hardware/README.md) | The board, the panels and the supply, and why not the cheaper options | ESP32-S3 N16R8, 2 × 32 × 8 WS2812B, 5 V 30 A |
 | 2 | [Wiring and power](parts/02-wiring/README.md) | Five wires, two buttons, no resistors, power injection | [wiring.svg](images/wiring.svg) |
 | 3 | [Firmware](parts/03-firmware/README.md) | A custom WLED 16.0.1 build: 64 segments, staircase + audioreactive usermods | [WLED](https://github.com/wled/WLED) 16.0.1 |
-| 4 | [The seven behaviour patches](parts/04-behaviour-patches/README.md) | P1–P7: sweep direction, hold timing, active-low buttons, clean preset switching, fades on All | WLED's Animated Staircase usermod |
+| 4 | [The behaviour patches](parts/04-behaviour-patches/README.md) | P1–P9: sweep direction, hold timing, active-low buttons, clean preset switching, fades on All, power back up mid-fade | WLED's Animated Staircase usermod |
 | 5 | [WLED settings](parts/05-wled-settings/README.md) | 512 LEDs as one 8 × 64 matrix, 26 A limit, 100 ms per step | WLED settings / JSON API |
 | 6 | [The ten presets](parts/06-presets/README.md) | Sweep, Rainbow, All, Matrix, Disco, Danger, Off, the two triggers and Danger's fade-out | WLED presets |
 | 7 | [Home Assistant](parts/07-home-assistant/README.md) | PIRs, day/night, mode dropdown, the red alarm flash, two dashboard cards | WLED integration, Bubble Card |
@@ -129,10 +130,10 @@ explained once in **[shared/README.md](shared/README.md)**.
 
 **When it runs.** These are lights for the dark: Home Assistant only lets the
 **motion sensors** light the stairs between sunset and sunrise, worked out from
-`sun.sun` rather than a clock, so it tracks the seasons on its own. The **Moon**
-toggle forces night mode on when you want them live anyway — a gloomy afternoon,
-or showing somebody — and latches until you turn it off. **Power** is the master
-switch above both.
+`sun.sun` rather than a clock, so it tracks the seasons on its own. The **Night
+mode** toggle opens that window when you want them live anyway — a gloomy
+afternoon, or showing somebody — and latches until you turn it off. There is no
+master switch: the card is about the staircase and nothing else.
 
 Three things sit outside that window. **Matrix** and **Disco** run from the moment
 you select them, day or night. **Danger** answers to the alarm alone, because an
@@ -254,7 +255,7 @@ Every Home Assistant file is marked up: **search for `CHANGE`**.
 | The bottom button lights the top of the stairs | The matrix is top-start, or the two GPIOs are swapped. Fix *first LED = bottom* in 2D Configuration |
 | The far end never lights | The on-time is shorter than the sweep — but on this firmware it shouldn't be, because patch P3 starts the hold after the sweep. Check you're running this build (`/json/info` → `"release":"ESP32-S3_Staircase"`) |
 | Rainbow shows all one colour | A preset was re-saved from the UI. Regenerate with `tools/make_staircase.py` |
-| Rows flash twice during the sweep | Not this firmware — check `/json/info` → `"release":"ESP32-S3_Staircase"`. The step-pacing and fade fixes are in [Part 4](parts/04-behaviour-patches/README.md#9-three-fixes-for-64-segments-on-wled-16) |
+| Rows flash twice during the sweep | Not this firmware — check `/json/info` → `"release":"ESP32-S3_Staircase"`. The step-pacing and fade fixes are in [Part 4](parts/04-behaviour-patches/README.md#10-three-fixes-for-64-segments-on-wled-16) |
 | Switching to Matrix or Disco plays an off-sweep first | Same: that build is missing patch P6. Rebuild from [Part 4](parts/04-behaviour-patches/README.md) |
 | The top steps are dim or yellow | Voltage drop. Inject power at the far end |
 | The Disco bars are the wrong colours | `palette0.json` isn't on the controller. Upload it and reboot |
@@ -262,7 +263,7 @@ Every Home Assistant file is marked up: **search for `CHANGE`**.
 | Every trigger lights the whole staircase red | A **Danger** ran, and the controller is still carrying Danger's single full-matrix segment. Preset 7 is meant to rebuild the 64 rows — regenerate it with `tools/make_staircase.py` and check `/json/state` shows 64 segments after selecting **Stairs Off** |
 | Phone and Home Assistant triggers do nothing | Same cause, or you're in Matrix or Disco, where triggers are ignored by design |
 | All snaps on and off instead of fading | A build without patch P7, or `fade-in-ms` / `fade-out-ms` set to 0 |
-| The buttons stopped working after I saved a setting | A config was saved while the staircase logic was disabled, so `enabled: false` became the boot default. Switch Moon on, tick **enabled** in Config → Usermods, save again — [Part 5](parts/05-wled-settings/README.md) |
+| The buttons stopped working after I saved a setting | A config was saved while the staircase logic was disabled, so `enabled: false` became the boot default. Switch Night mode on, tick **enabled** in Config → Usermods, save again — [Part 5](parts/05-wled-settings/README.md) |
 | The staircase feature vanished after an update | Stock WLED was installed. Reflash `_OTA.bin` |
 | More than 64 steps | Rebuild with a higher `-D MAX_NUM_SEGMENTS` ([Part 3](parts/03-firmware/README.md)) |
 

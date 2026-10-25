@@ -208,7 +208,7 @@
       <h1>WLED Staircase - Interactive Demo</h1>
       <p>
         Everything in this demo behaves the way the real thing does. The stair
-        sensors run at night only — press <b>Moon</b> to force night-time mode.
+        sensors run at night only — press <b>Night mode</b> to override that.
         Matrix, Disco, Danger and the hardware button ignore that window.
       </p>
     </div>
@@ -224,11 +224,7 @@
           <div class="bubble-name">Staircase</div>
           <button class="pill" id="btn-moon" aria-pressed="false">
             <svg class="ic" viewBox="0 0 24 24"><path d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z"/></svg>
-            Moon
-          </button>
-          <button class="pill on" id="btn-power" aria-pressed="true">
-            <svg class="ic" viewBox="0 0 24 24"><path d="M16.56,5.44L15.11,6.89C16.84,7.94 18,9.83 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12C6,9.83 7.16,7.94 8.88,6.88L7.44,5.44C5.36,6.88 4,9.28 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12C20,9.28 18.64,6.88 16.56,5.44M13,3H11V13H13"/></svg>
-            Power
+            Night mode
           </button>
         </div>
         <div class="bubble-row">
@@ -284,11 +280,12 @@
         </button>
       </div>
       <p class="note">
-        The <b>stair sensors</b> are the real interface: they obey Power and the
-        day/night window, so in daylight press <b>Moon</b> first. Press
-        <b>Alarm armed house</b> and then <b>Top sensor</b> for the red Danger
-        warning — that one works day or night, because an alarm armed in the
-        afternoon has to warn you in the afternoon. The <b>hardware button</b> is
+        The <b>stair sensors</b> are the real interface: they obey the day/night
+        window, so in daylight press <b>Night mode</b> first. Press
+        <b>Alarm armed house</b> and then <b>Top sensor</b> — or the card's
+        <b>Top</b> — for the red Danger warning. That one works day or night,
+        because an alarm armed in the afternoon has to warn you in the afternoon.
+        The <b>hardware button</b> is
         on the controller, locked away, and ignores all of it: it exists to prove
         the LEDs work when nothing else can be trusted.
       </p>
@@ -370,9 +367,9 @@
   var CELL = canvas.width / COLS;
 
   // ---- the Home Assistant side --------------------------------------------
-  var ha = { power: true, moon: false, night: false, armed: false, mode: "Sweep" };
+  var ha = { moon: false, night: false, armed: false, mode: "Sweep" };
 
-  function active() { return ha.power && (ha.night || ha.moon); }
+  function active() { return ha.night || ha.moon; }
 
   // The real thing asks sun.sun. In the browser, the visitor's own clock is the
   // nearest thing to it: dark between 18:00 and 06:00.
@@ -393,18 +390,13 @@
   }
 
   function applyState(reason) {
-    if (!ha.power) {
-      setMode("Sweep");
-      preset("Stairs Off", reason || "Power off");
-      return;
-    }
     // Matrix and Disco are the fun ones: not day/night aware, not trigger aware.
-    // Selecting one runs it. Only Power off, tested above, stops them.
+    // Selecting one runs it. Picking another mode is the only way to stop one.
     if (ha.mode === "Matrix" || ha.mode === "Disco") {
       preset("Stairs " + ha.mode, reason || ha.mode + " selected");
       return;
     }
-    if (!active()) { preset("Stairs Off", reason || "Daylight, and Moon is off"); return; }
+    if (!active()) { preset("Stairs Off", reason || "Daylight, and Night mode is off"); return; }
     preset("Stairs " + ha.mode, reason || ha.mode + " selected");
   }
 
@@ -462,29 +454,37 @@
     log(why ? why + " → <b>" + name + "</b>" : "<b>" + name + "</b>");
   }
 
-  // A trigger. The three ways in are gated differently, so `path` decides which
-  // gate applies: "sensor" is a stair PIR, "card" is the bubble card's Top /
-  // Bottom, "hardware" is a button on the controller itself.
+  // A trigger. The four ways in are gated differently, so `path` decides which
+  // gate applies: "sensor" is a stair PIR — the way the stairs are really used —
+  // "card" is the bubble card's Top / Bottom, "hardware" is a diagnostic button
+  // on the controller itself.
   function trigger(dir, source, path) {
-    // Danger belongs to the top PIR alone, and it outranks everything, Power
-    // included: the alarm can be armed in the afternoon as easily as at midnight.
-    if (path === "sensor" && dir === "top" && ha.armed) {
+    // Danger outranks everything: the alarm can be armed in the afternoon as
+    // easily as at midnight. The card's Top button reaches it through the script,
+    // which is why "card" counts here as well as "sensor".
+    if ((path === "sensor" || path === "card") && dir === "top" && ha.armed) {
       preset("Stairs Danger", source + " while the house alarm is armed");
       dangerUntil = performance.now() + DANGER_MS;
       return;
     }
     // The hardware buttons are a diagnostic and skip every gate — not the hour,
-    // not the alarm, not Power, not Home Assistant. They answer one question:
+    // not the alarm, not Home Assistant. They answer one question:
     // are the controller and the LEDs working?
     if (path !== "hardware") {
       if (!active()) {
-        log(source + " ignored — the stairs only run at night. Press <b>Moon</b> to force night mode");
+        log(source + " ignored — the stairs only run at night. Press <b>Night mode</b> to override");
         return;
       }
     }
     if (!fw.usermod) { log(source + " ignored — the staircase logic is off in this mode"); return; }
     if (fw.phase !== "idle") {
-      if (dir !== fw.dir) { log(source + " ignored — a sweep from the " + fw.dir + " is already running"); return; }
+      // P5: the far sensor can't reverse a sweep that is already running. The All
+      // layout is exempt — every step lights together, so direction means nothing
+      // there and ignoring the other end would just make that button look dead.
+      if (dir !== fw.dir && !fw.whole) {
+        log(source + " ignored — a sweep from the " + fw.dir + " is already running");
+        return;
+      }
       if (fw.phase === "hold") { fw.at = performance.now(); log(source + " — hold restarted"); return; }
       if (fw.phase === "off") { fw.phase = "on"; fw.at = performance.now(); log(source + " — filling again"); return; }
       log(source + " — already sweeping");
@@ -682,8 +682,7 @@
     else if (fw.master) { for (var r = 0; r < ROWS; r++) if (rows[r]) lit++; }
     document.getElementById("s-lit").textContent = lit + " / " + ROWS;
 
-    var mode = !ha.power ? ["", "Power off", "lights turned off"]
-      : ha.moon           ? ["override", "Override", "lights ready to run"]
+    var mode = ha.moon  ? ["override", "Night mode", "lights ready to run"]
       : ha.night          ? ["ready", "Nighttime", "lights ready to run"]
       :                     ["", "Daytime", "lights turned off"];
     document.getElementById("status").className = "status " + mode[0];
@@ -712,12 +711,11 @@
     });
   }
 
-  toggleButton("btn-power", "power", function () { applyState(ha.power ? "Power on" : "Power off"); });
   toggleButton("btn-moon", "moon", function () {
-    applyState(ha.moon ? "Moon on — night mode forced" : "Moon off");
+    applyState(ha.moon ? "Night mode on — daylight overridden" : "Night mode off");
   });
   toggleButton("btn-armed", "armed", function () {
-    log(ha.armed ? "Alarm armed house — the top sensor now means Danger" : "Alarm disarmed");
+    log(ha.armed ? "Alarm armed house — Top, sensor or card, now means Danger" : "Alarm disarmed");
   });
 
   document.getElementById("mode").addEventListener("change", function (e) {
@@ -736,7 +734,7 @@
   applyState(ha.night ? "Boot — the sun has set" : "Boot — the sun is up");
   log(ha.night
     ? "It's night here, so the stairs are live — press <b>Bottom</b> or <b>Top</b>"
-    : "It's daytime here — press <b>Moon</b> to override, then <b>Bottom</b> or <b>Top</b>");
+    : "It's daytime here — press <b>Night mode</b> to override, then a <b>stair sensor</b>");
 
   function frame(now) {
     watchClock();

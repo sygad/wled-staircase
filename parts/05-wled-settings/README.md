@@ -1,4 +1,4 @@
-[← Part 4 · The seven behaviour patches](../04-behaviour-patches/README.md) · [All parts](../../README.md#the-parts) · [Part 6 · The ten presets →](../06-presets/README.md)
+[← Part 4 · The behaviour patches](../04-behaviour-patches/README.md) · [All parts](../../README.md#the-parts) · [Part 6 · The ten presets →](../06-presets/README.md)
 
 # Part 5 · WLED settings
 
@@ -119,4 +119,4 @@ above landed.
 
 ---
 
-[← Part 4 · The seven behaviour patches](../04-behaviour-patches/README.md) · [All parts](../../README.md#the-parts) · [Part 6 · The ten presets →](../06-presets/README.md)
+[← Part 4 · The behaviour patches](../04-behaviour-patches/README.md) · [All parts](../../README.md#the-parts) · [Part 6 · The ten presets →](../06-presets/README.md)

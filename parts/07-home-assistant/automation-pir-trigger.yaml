@@ -17,9 +17,6 @@ triggers:
   id: top
 conditions:
 - condition: state
-  entity_id: input_boolean.stairs_s3_power
-  state: 'on'
-- condition: state
   entity_id: input_boolean.motion_sensors  # CHANGE: your own master motion toggle, or delete this line
   state: 'on'
 - condition: or
