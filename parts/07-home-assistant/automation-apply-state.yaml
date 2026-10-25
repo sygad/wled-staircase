@@ -1,17 +1,16 @@
 # Staircase v2 · Automation 3 of 3 – Apply state (the only thing that chooses a preset)
 # Explained in: parts/07-home-assistant/README.md
 # Paste into: Settings → Automations → ⋮ → Edit in YAML (new empty automation)
-# Needs: the three helpers in helpers.yaml, the WLED integration, input_boolean.motion_sensors
+# Needs: the three helpers in helpers.yaml and the WLED integration
 # Search this file for CHANGE and swap in your own entity IDs.
 
 alias: Staircase v2 – Apply state
-description: Puts WLED Staircase v2 into the right preset whenever Power, Moon, mode, motion sensors or day/night change, when HA starts, and when the controller comes back online.
+description: Puts WLED Staircase v2 into the right preset whenever Power, Moon, mode or day/night change, when HA starts, and when the controller comes back online. The house motion toggle is not involved: that gates the motion sensors only.
 triggers:
 - trigger: state
   entity_id:
   - input_boolean.stairs_s3_power
   - input_boolean.stairs_s3_moon
-  - input_boolean.motion_sensors  # CHANGE: your own master motion toggle, or delete this line
   to:
   - 'on'
   - 'off'
@@ -52,21 +51,34 @@ actions:
         entity_id: input_select.stairs_s3_mode
       data:
         option: Sweep
-  - alias: 'Outside the active window: off'
+  - alias: 'Matrix or Disco: run whenever selected, day or night'
     conditions:
-    - condition: or
-      conditions:
-      - condition: state
-        entity_id: input_boolean.motion_sensors  # CHANGE: your own master motion toggle, or delete this line
-        state: 'off'
-      - condition: and
-        conditions:
-        - condition: state
-          entity_id: sun.sun
-          state: above_horizon
-        - condition: state
-          entity_id: input_boolean.stairs_s3_moon
-          state: 'off'
+    - condition: state
+      entity_id: input_select.stairs_s3_mode
+      state:
+      - Matrix
+      - Disco
+    sequence:
+    - action: select.select_option
+      target:
+        entity_id: select.wled_staircase_preset  # CHANGE: your own entity
+      data:
+        option: Stairs {{ states('input_select.stairs_s3_mode') }}
+      note: >-
+        The fun ones are not day/night aware and not trigger aware: selecting
+        them runs them. Power off still wins, because it is the branch above.
+  - alias: 'Daylight without Moon: off'
+    conditions:
+    - condition: state
+      entity_id: sun.sun
+      state: above_horizon
+      note: >-
+        The house motion toggle is deliberately NOT here: it gates the motion
+        sensors only, in the PIR and Danger automations. Parking the stairs over
+        it would kill the selected mode as well.
+    - condition: state
+      entity_id: input_boolean.stairs_s3_moon
+      state: 'off'
     sequence:
     - action: select.select_option
       target:

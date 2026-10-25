@@ -235,7 +235,7 @@ with the pre-built firmware.
 | `light.wled_staircase` | your WLED device's main light | " |
 | `binary_sensor.staircase_*_pir_occupancy` | your two occupancy sensors | " |
 | `alarm_control_panel.home_alarm` | your alarm panel, or delete Danger | " |
-| `input_boolean.motion_sensors` | your own master motion toggle, or delete the condition | " |
+| `input_boolean.motion_sensors` | your own master motion toggle, or delete the two conditions (PIR and Danger only) | " |
 
 Every Home Assistant file is marked up: **search for `CHANGE`**.
 

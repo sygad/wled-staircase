@@ -33,8 +33,12 @@ mode / power ─┘
 there is no point lighting a staircase you can already see. One rule decides
 whether they are live:
 
-> **Active** = Power **on** and the house motion toggle **on** and (the sun is
-> **below the horizon** or Moon is **on**).
+> **Active** = Power **on** and (the sun is **below the horizon** or Moon is
+> **on**).
+
+Two modes sit outside that rule entirely. **Matrix** and **Disco** are the fun
+ones: they run from the moment you select them, day or night, and they ignore
+every trigger. Only Power off stops them.
 
 - **Night is the sun, not a clock.** The condition reads `sun.sun`, which Home
   Assistant works out from your latitude and longitude, so the stairs follow
@@ -49,8 +53,11 @@ whether they are live:
 - **Power** off means Stairs Off and the mode reset to Sweep. It stops everything
   Home Assistant drives; it does not reach the wall buttons.
 - The **house motion toggle** (`input_boolean.motion_sensors` here) is my own
-  whole-house "ignore the sensors" switch. It gates the **motion sensors only**.
-  Delete that condition if you don't have one.
+  whole-house "ignore the sensors" switch. It gates the **motion sensors only**,
+  so it appears in the PIR and Danger automations and **nowhere else**. It is
+  deliberately absent from Apply state: parking the stairs over it would take the
+  selected mode down with it, and Moon would stop meaning "behave as if it were
+  night". Delete those conditions if you don't have such a switch.
 
 ### The three ways to trigger the stairs are gated differently
 
@@ -58,7 +65,7 @@ This is the part worth getting right, and the original build got it wrong.
 
 | Path | Gated by |
 |---|---|
-| **The wall buttons** (GPIO 4/5) | **Nothing. They always work.** |
+| **The wall buttons** (GPIO 4/5) | **Nothing. They always work** — except while Matrix, Disco or Danger is running, when the staircase logic is switched off |
 | **The card's Top / Bottom buttons** | Power **and** (night **or** Moon) |
 | **The motion sensors** | Power **and** the house motion toggle **and** (night **or** Moon) |
 
@@ -163,14 +170,19 @@ re-run automation 3 to put the previous mode back.
 ### 3 · Apply state (`automation-apply-state.yaml`)
 
 The only automation that decides a preset from scratch. It runs when Power, Moon,
-the mode, the motion toggle or day/night change, when Home Assistant starts, and
-when the controller comes back from `unavailable`.
+the mode or day/night change, when Home Assistant starts, and when the controller
+comes back from `unavailable`.
 
 | Situation | Result |
 |---|---|
 | Power off | Stairs Off, and the mode dropdown reset to Sweep |
-| Not active (daylight without Moon, or motion off) | Stairs Off |
-| Active | `Stairs {{ the mode }}` — Sweep, All, Rainbow, Matrix or Disco |
+| Mode is Matrix or Disco | `Stairs Matrix` / `Stairs Disco` — they run day or night |
+| Daylight without Moon | Stairs Off |
+| Otherwise | `Stairs {{ the mode }}` — Sweep, All or Rainbow |
+
+The order matters: Power off is tested first, so it still stops Matrix and Disco,
+and the Matrix/Disco branch is tested before the daylight one, so daylight does
+not park them.
 
 - **Mode: `restart`.** Flipping three toggles quickly should settle on the last
   answer, not queue up four preset changes.

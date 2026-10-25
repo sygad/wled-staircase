@@ -381,6 +381,12 @@
       preset("Stairs Off", reason || "Power off");
       return;
     }
+    // Matrix and Disco are the fun ones: not day/night aware, not trigger aware.
+    // Selecting one runs it. Only Power off, tested above, stops them.
+    if (ha.mode === "Matrix" || ha.mode === "Disco") {
+      preset("Stairs " + ha.mode, reason || ha.mode + " selected");
+      return;
+    }
     if (!active()) { preset("Stairs Off", reason || "Daylight, and Moon is off"); return; }
     preset("Stairs " + ha.mode, reason || ha.mode + " selected");
   }
