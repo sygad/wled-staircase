@@ -69,7 +69,7 @@ This is the part worth getting right, and the original build got it wrong.
 | Path | What it is for | Gated by |
 |---|---|---|
 | **The motion sensors** | **How the stairs are actually used.** You walk up or down and they light | Power **and** the house motion toggle **and** (night **or** Moon) |
-| **Danger** | A warning that somebody is on the stairs while the house is armed | The alarm being **armed home** **and** Power. **Nothing else** |
+| **Danger** | A warning that somebody is on the stairs while the house is armed | The alarm being **armed home**. **Nothing else at all** |
 | **The card's Top / Bottom buttons** | Trying a mode out from your phone | Power **and** (night **or** Moon) |
 | **The hardware buttons** (GPIO 4/5) | Proving the controller and the LEDs work, and nothing else | **Nothing.** Not the hour, not the motion toggle, not the alarm, not Home Assistant |
 
@@ -80,9 +80,10 @@ pointless, and the house motion toggle means "don't let motion switch lights on"
 
 **Danger is above all of it.** The alarm can be armed at four in the afternoon as
 easily as at midnight, so a warning that only worked in the evening would not be
-a warning. It ignores the sun, it ignores Moon, and it ignores the house motion
+a warning. It ignores the sun, it ignores Moon, it ignores the house motion
 toggle — switching the sensors off is about routine lighting, not about whether
-you get told somebody is on the stairs. Only Power off stops it.
+you get told somebody is on the stairs — and it ignores Power too. The armed
+alarm is its only condition. A warning with conditions on it is not a warning.
 
 **The hardware buttons are a diagnostic, not a control.** Two buttons on the
 controller itself, locked away, used perhaps twice a year. Their one job is to
@@ -176,10 +177,10 @@ the previous mode back.
   five seconds — the same convention patch P7 uses for All. The 600 ms delay after
   the fade-out exists so the fade finishes before automation 3 applies the next
   preset on top of it.
-- **The alarm and Power are its only conditions.** It overrides Matrix and Disco,
-  and it deliberately ignores the sun, Moon and the house motion toggle: an alarm
-  armed in the afternoon has to warn you in the afternoon. Switching the motion
-  sensors off silences routine lighting, not this.
+- **The armed alarm is its only condition.** It overrides Matrix and Disco, and
+  it deliberately ignores the sun, Moon, the house motion toggle and Power: an
+  alarm armed in the afternoon has to warn you in the afternoon. Switching the
+  motion sensors off silences routine lighting, not this.
 - **Recovering the row layout is part of the chain.** Stairs Danger lights the
   matrix as one segment, so the final step — re-running automation 3 — is what
   gets the 64 rows back, by way of the mode's preset or Stairs Off. Leave that

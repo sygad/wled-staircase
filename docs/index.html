@@ -466,9 +466,9 @@
   // gate applies: "sensor" is a stair PIR, "card" is the bubble card's Top /
   // Bottom, "hardware" is a button on the controller itself.
   function trigger(dir, source, path) {
-    // Danger belongs to the top PIR alone, and it outranks everything except
-    // Power: the alarm can be armed in the afternoon as easily as at midnight.
-    if (path === "sensor" && dir === "top" && ha.armed && ha.power) {
+    // Danger belongs to the top PIR alone, and it outranks everything, Power
+    // included: the alarm can be armed in the afternoon as easily as at midnight.
+    if (path === "sensor" && dir === "top" && ha.armed) {
       preset("Stairs Danger", source + " while the house alarm is armed");
       dangerUntil = performance.now() + DANGER_MS;
       return;
