@@ -16,6 +16,12 @@ PIRs, which never touch this board — they reach the controller through Home
 Assistant ([Part 7](../07-home-assistant/README.md)). The two buttons are a
 diagnostic, described below.
 
+<a href="../../images/build-breadboard.jpg"><img src="../../images/build-breadboard.jpg" alt="Close-up of the ESP32-S3 on a breadboard: the LED cable plugged in on the right, two push buttons below the board wired to GPIO 4 and 5" width="100%"></a>
+
+*The controller as built: the ESP32-S3 on a breadboard, the three-wire LED cable
+coming in on the right, and the two diagnostic buttons below it, each wired
+between its GPIO and ground with no resistor.*
+
 ## At a glance
 
 | | |

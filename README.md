@@ -20,12 +20,16 @@ that decide when the stairs are live.
 stairs on the right. Press a trigger and watch the sweep, switch modes, set the
 alarm and trip the top sensor. No hardware needed.
 
-<!-- TODO: video. Replace the line below with:
-[![Watch it in action on YouTube](https://img.youtube.com/vi/<ID>/hqdefault.jpg)](https://www.youtube.com/watch?v=<ID>)
+### 🎥 Watch it
 
-▶ **[Watch it in action on YouTube](https://www.youtube.com/watch?v=<ID>)**
--->
-> 🎥 *Video coming soon.* 📷 *Photos of the build coming soon.*
+| Sweep | Rainbow | Matrix |
+|:---:|:---:|:---:|
+| [<img src="images/mode-sweep.jpg" alt="Sweep: every row lit warm white" width="240">](https://youtube.com/shorts/vzJJwnvL0dU) | [<img src="images/mode-rainbow.jpg" alt="Rainbow: red at the bottom through to violet at the top" width="240">](https://youtube.com/shorts/ZnB6A8TEL7Y) | [<img src="images/mode-matrix.jpg" alt="Matrix: green rain falling down the panels" width="240">](https://youtube.com/shorts/ZnB6A8TEL7Y) |
+| ▶ **[Sweep on YouTube](https://youtube.com/shorts/vzJJwnvL0dU)** | ▶ **[Rainbow, then Matrix, on YouTube](https://youtube.com/shorts/ZnB6A8TEL7Y)** | |
+
+Two YouTube Shorts of the bench rig: a warm-white **Sweep** filling down from
+the top step, holding and emptying; then a **Rainbow** sweep followed by
+**Matrix** rain.
 
 ---
 
@@ -40,6 +44,15 @@ Nothing about that is a fudge: the firmware, the presets and the Home Assistant
 side are identical on real stairs. Wherever this repo says **rows**, read **your
 number of steps** — one short strip per step, wired as one chain, up to 64 of
 them. The [demo](https://sygad.github.io/wled-staircase/) shows exactly what the bench rig does.
+
+<p align="center">
+  <a href="images/build-bench.jpg"><img src="images/build-bench.jpg" alt="The bench rig: the 8 x 64 matrix standing upright beside the breadboarded ESP32-S3, the 5 V supply and the two Zigbee PIRs" width="420"></a>
+</p>
+
+*The bench rig: the two panels standing as one 64-row column, the ESP32-S3 on a
+breadboard with its two diagnostic buttons, the 5 V supply behind it, and the two
+Zigbee PIRs (marked T and B) on the left. More photos in
+[Part 1](parts/01-hardware/README.md) and [Part 2](parts/02-wiring/README.md).*
 
 ---
 
@@ -80,7 +93,7 @@ parts/
   07-home-assistant/            three helpers, three automations, a script, two cards
   08-testing/                   the two scripts that prove it works
 shared/                         five tricks several parts depend on
-images/                         the wiring diagram
+images/                         the wiring diagram, build photos, stills from the videos
 ```
 
 **Pick your route:**
@@ -96,8 +109,6 @@ images/                         the wiring diagram
 ---
 
 ## The parts
-
-<!-- TODO: images/stairs-numbered.jpg — the build with each part numbered -->
 
 | # | Part | What it does | Built from |
 |---|---|---|---|

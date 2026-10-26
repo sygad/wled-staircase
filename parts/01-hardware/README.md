@@ -16,6 +16,12 @@ cheaper option.
 > seen at once on a bench. On real stairs the panels become one short strip per
 > step, wired as a single chain; nothing else changes.
 
+<a href="../../images/build-overview.jpg"><img src="../../images/build-overview.jpg" alt="The controller on a breadboard, the 5 V supply behind it, the two Zigbee PIRs to the left and the foot of the matrix on the right" width="100%"></a>
+
+*The rig from above: the ESP32-S3 on a breadboard with the two diagnostic
+buttons, the 5 V supply behind it, the two Zigbee PIRs (Sonoff SNZB-03, marked
+**T** and **B**) on the left, and the foot of the matrix on the right.*
+
 ## At a glance
 
 | | |
