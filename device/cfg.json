@@ -66,7 +66,7 @@
   "hw": {
     "led": {
       "total": 512,
-      "maxpwr": 26000,
+      "maxpwr": 17000,
       "cct": false,
       "cr": false,
       "ic": false,
@@ -102,7 +102,7 @@
           "ref": false,
           "rgbwm": 0,
           "freq": 0,
-          "maxpwr": 26000,
+          "maxpwr": 17000,
           "ledma": 55,
           "drv": 0,
           "text": ""

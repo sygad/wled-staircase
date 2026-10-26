@@ -59,7 +59,7 @@ Zigbee PIRs (marked T and B) on the left. More photos in
 ## The whole build in one picture
 
 <a href="https://raw.githubusercontent.com/sygad/wled-staircase/main/images/wiring.svg" title="Open the wiring diagram full screen">
-  <img src="images/wiring.svg" alt="Wiring diagram: ESP32-S3, two 32x8 WS2812B panels, 5 V 30 A supply and two buttons" width="100%">
+  <img src="images/wiring.svg" alt="Wiring diagram: ESP32-S3, two 32x8 WS2812B panels, 5 V 20 A supply and two buttons" width="100%">
 </a>
 
 *Click the diagram to open it full screen.* Five wires and two buttons — the
@@ -112,11 +112,11 @@ images/                         the wiring diagram, build photos, stills from th
 
 | # | Part | What it does | Built from |
 |---|---|---|---|
-| 1 | [Hardware](parts/01-hardware/README.md) | The board, the panels and the supply, and why not the cheaper options | ESP32-S3 N16R8, 2 × 32 × 8 WS2812B, 5 V 30 A |
+| 1 | [Hardware](parts/01-hardware/README.md) | The board, the panels and the supply, and why not the cheaper options | ESP32-S3 N16R8, 2 × 32 × 8 WS2812B, 5 V 20 A |
 | 2 | [Wiring and power](parts/02-wiring/README.md) | Five wires, two buttons, no resistors, power injection | [wiring.svg](images/wiring.svg) |
 | 3 | [Firmware](parts/03-firmware/README.md) | A custom WLED 16.0.1 build: 64 segments, staircase + audioreactive usermods | [WLED](https://github.com/wled/WLED) 16.0.1 |
 | 4 | [The behaviour patches](parts/04-behaviour-patches/README.md) | P1–P9: sweep direction, hold timing, active-low buttons, clean preset switching, fades on All, power back up mid-fade | WLED's Animated Staircase usermod |
-| 5 | [WLED settings](parts/05-wled-settings/README.md) | 512 LEDs as one 8 × 64 matrix, 26 A limit, 100 ms per step | WLED settings / JSON API |
+| 5 | [WLED settings](parts/05-wled-settings/README.md) | 512 LEDs as one 8 × 64 matrix, 17 A limit, 100 ms per step | WLED settings / JSON API |
 | 6 | [The ten presets](parts/06-presets/README.md) | Sweep, Rainbow, All, Matrix, Disco, Danger, Off, the two triggers and Danger's fade-out | WLED presets |
 | 7 | [Home Assistant](parts/07-home-assistant/README.md) | PIRs, day/night, mode dropdown, the red alarm flash, two dashboard cards | WLED integration, Bubble Card |
 | 8 | [Testing](parts/08-testing/README.md) | One script that reads the setup, one that drives every preset change | Python 3, no packages |
@@ -184,7 +184,7 @@ The short version of everything that went wrong while building this.
 |---|---|---|
 | Controller | diymore **ESP32-S3 DevKitC-1 N16R8** (16 MB flash, 8 MB octal PSRAM) | all |
 | LEDs | Two **32 × 8 WS2812B** panels, chained: 512 LEDs as one 8 × 64 matrix | 1, 2, 5, 6 |
-| Power | **5 V 30 A** supply, injected at both ends of the chain | 1, 2 |
+| Power | **5 V 20 A** supply (Weishuo S-100-5), injected at both ends of the chain, limited to **17 A** in WLED | 1, 2 |
 | Triggers | 2 × momentary push buttons, to GND, **no resistors** | 2, 4 |
 | Motion | Zigbee PIRs that already exist in Home Assistant | 7 |
 | Microphone | **INMP441** I2S — specified, not fitted yet | 1, 6 |
@@ -246,7 +246,7 @@ with the pre-built firmware.
 | `--width 8` | your LEDs per step | " |
 | `--data-pin 12` | your LED data GPIO | " |
 | `--bottom-pin 4` / `--top-pin 5` | your trigger GPIOs, or `-1` for none | " |
-| `--max-ma 26000` | ~85 % of your supply, in mA | " |
+| `--max-ma 17000` | ~85 % of your supply, in mA | " |
 | `--step-ms 100` / `--on-time 5` | your taste | " |
 | `select.wled_staircase_preset` | your WLED device's preset select | `parts/07-home-assistant/*.yaml` |
 | `light.wled_staircase` | your WLED device's main light | " |
@@ -269,6 +269,7 @@ Every Home Assistant file is marked up: **search for `CHANGE`**.
 | Rows flash twice during the sweep | Not this firmware — check `/json/info` → `"release":"ESP32-S3_Staircase"`. The step-pacing and fade fixes are in [Part 4](parts/04-behaviour-patches/README.md#10-three-fixes-for-64-segments-on-wled-16) |
 | Switching to Matrix or Disco plays an off-sweep first | Same: that build is missing patch P6. Rebuild from [Part 4](parts/04-behaviour-patches/README.md) |
 | The top steps are dim or yellow | Voltage drop. Inject power at the far end |
+| Full white is dimmer than I expected | That's the power limiter doing its job. 512 LEDs at full white want about 28 A; on a 20 A supply WLED caps them at 17 A and dims everything evenly. Fit a bigger supply and raise `--max-ma` if you want more |
 | The Disco bars are the wrong colours | `palette0.json` isn't on the controller. Upload it and reboot |
 | The hardware buttons do nothing | They should always work, in daylight too — **Stairs Off** parks the strip but leaves the staircase logic enabled. Check `/json/cfg` → `um.staircase.enabled` is `true`. The one case where they are deliberately dead is while **Matrix**, **Disco** or **Danger** is running — [Part 7](parts/07-home-assistant/README.md) |
 | Every trigger lights the whole staircase red | A **Danger** ran, and the controller is still carrying Danger's single full-matrix segment. Preset 7 is meant to rebuild the 64 rows — regenerate it with `tools/make_staircase.py` and check `/json/state` shows 64 segments after selecting **Stairs Off** |

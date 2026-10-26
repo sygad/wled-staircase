@@ -26,7 +26,7 @@ buttons, the 5 V supply behind it, the two Zigbee PIRs (Sonoff SNZB-03, marked
 
 | | |
 |---|---|
-| **Built from** | diymore ESP32-S3 DevKitC-1 N16R8, two 32 × 8 WS2812B panels, a 5 V 30 A supply |
+| **Built from** | diymore ESP32-S3 DevKitC-1 N16R8, two 32 × 8 WS2812B panels, a 5 V 20 A supply |
 | **Files in this folder** | this page only |
 | **Also needs** | [Part 2 · Wiring and power](../02-wiring/README.md) for how it all joins up |
 | **Drives** | 512 LEDs as one 8 × 64 matrix: 64 rows of 8, one row per step |
@@ -38,7 +38,7 @@ buttons, the 5 V supply behind it, the two Zigbee PIRs (Sonoff SNZB-03, marked
 |---|---|---|
 | Controller | **diymore ESP32-S3 DevKitC-1 N16R8** — 16 MB flash, 8 MB octal PSRAM, USB-C | WLED only allows more than 32 segments on a board with PSRAM, and 64 steps needs 64 segments. The S3 also has the headroom for 2D effects and, later, a microphone |
 | LEDs | **Two 32 × 8 WS2812B panels**, chained into one 8 × 64 matrix: 512 LEDs | A panel row is a tidy stand-in for a step: 8 LEDs wide, addressable as a block. On real stairs this is one short strip per step, wired as one long chain |
-| Power | **5 V 30 A** supply, feeding the panels at both ends | 512 LEDs at full white is about 28 A. See [Power: one source at a time](../../shared/README.md#power-one-source-at-a-time) |
+| Power | **5 V 20 A** supply (Weishuo S-100-5, 100 W), feeding the panels at both ends | 512 LEDs at full white would want about 28 A, more than this supply gives, so WLED's limiter caps them at 17 A. With every step lit, the sweep's warm white comes to about 17.5 A, so it gets trimmed by a few percent, which you can't see. Full white would be cut by about 40 %. See [Power: one source at a time](../../shared/README.md#power-one-source-at-a-time) |
 | Diagnostics | **2 × momentary push buttons** (bottom and top), to GND, no resistors | **Not how the stairs are used.** They override every condition and exist to prove the controller and the LEDs work — see [Part 2](../02-wiring/README.md#the-two-buttons-are-a-diagnostic). The firmware uses the ESP32's internal pull-ups, so a press pulls the pin low. Patch P4 in [Part 4](../04-behaviour-patches/README.md) |
 | **Triggers** | **2 × Zigbee PIRs already in Home Assistant**, one at each end | **This is how the stairs are actually used.** They never touch the ESP32: Home Assistant turns a PIR into a preset selection, so the sensors can be any kind Home Assistant can see |
 | Microphone | **INMP441 I2S** — specified, **not fitted yet** | Only the Disco preset wants it. The firmware is already built with `audioreactive` and the pins are set, so fitting it later needs no rebuild |
@@ -54,7 +54,7 @@ input.
 - **One data pin for all 512 LEDs.** 512 pixels on one WS2812B line refreshes at
   about 42 fps, which is plenty for a sweep. Splitting across two pins would buy
   frame rate the project doesn't need.
-- **26 A power limit** in WLED, about 85 % of the supply's rating. WLED dims
+- **17 A power limit** in WLED, about 85 % of the supply's 20 A rating. WLED dims
   globally rather than letting the rail sag.
 - **Power injection at the far end** of the chain, so the top steps aren't dim
   and yellow.
@@ -77,8 +77,10 @@ input.
 
 ## Add just this part
 
-1. Buy the board, the panels and a supply sized for your LED count: LEDs × 60 mA
-   is the worst case, and the supply wants about 20 % headroom on top.
+1. Buy the board, the panels and a supply. LEDs × 60 mA is the worst case at
+   full white. Either size the supply for that with about 20 % headroom, or do
+   what this build does: use a smaller supply and set the power limiter to about
+   85 % of its rating, so WLED dims rather than overloads it.
 2. Count your steps. That number is `--rows` everywhere in this repo, and it must
    be 64 or fewer (the firmware's compiled-in segment limit).
 3. Decide the LEDs per step. That is `--width`.

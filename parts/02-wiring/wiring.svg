@@ -40,9 +40,9 @@
 
   <!-- ===== Power supply ===== -->
   <rect x="40" y="40" width="190" height="120" rx="10" fill="#eceff1" stroke="#90a4ae" stroke-width="2"/>
-  <text x="135" y="86" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">5 V 30 A supply</text>
+  <text x="135" y="86" text-anchor="middle" font-size="17" font-weight="700" fill="#263238">5 V 20 A supply</text>
   <text x="135" y="108" text-anchor="middle" font-size="13" fill="#546e7a">for the panels only</text>
-  <text x="135" y="128" text-anchor="middle" font-size="13" fill="#546e7a">(limiter set to 26 A)</text>
+  <text x="135" y="128" text-anchor="middle" font-size="13" fill="#546e7a">(limiter set to 17 A)</text>
   <circle cx="230" cy="80" r="7" fill="#d32f2f" stroke="#fff" stroke-width="2"/>
   <circle cx="230" cy="120" r="7" fill="#263238" stroke="#fff" stroke-width="2"/>
   <text x="243" y="72" font-size="13" font-weight="700" fill="#d32f2f">+5V</text>

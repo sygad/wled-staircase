@@ -23,7 +23,7 @@ all be changed later without rebuilding.
 | LED Preferences | LED count | **512** | 64 rows × 8 LEDs |
 | | Type | **WS281x** (GRB) | What the panels are |
 | | Data GPIO | **12** | Free, not a strapping pin ([Part 2](../02-wiring/README.md)) |
-| | Max current | **26000 mA** | ~85 % of the 30 A supply. WLED dims globally rather than letting the rail sag |
+| | Max current | **17000 mA** | ~85 % of the 20 A supply. WLED dims globally rather than letting the rail sag |
 | | mA per LED | **55** | WS2812B at full white |
 | | Target refresh | **42 fps** | What 512 pixels on one line will actually do |
 | 2D Configuration | Panels | **1 panel, 8 wide × 64 high** | One logical matrix, even though it's two physical panels chained |

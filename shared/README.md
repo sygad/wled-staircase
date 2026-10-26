@@ -77,10 +77,13 @@ die.
 - On the stairs: the 5 V supply, with the USB lead unplugged.
 - At the desk: USB, with the 5 V wire off the board.
 
-512 WS2812B LEDs draw up to 28 A at full white, which is why the supply is 30 A,
-the power limiter is set to 26 A, and the far end of the chain gets its own
-power injection. Warm white at the brightness used here draws a fraction of
-that, but the limiter is what stops a white flash from browning out the run.
+512 WS2812B LEDs draw up to 28 A at full white. The supply here is 20 A, so the
+power limiter is set to 17 A (about 85 % of it) and the far end of the chain
+gets its own power injection. The warm white the sweep uses, with every step
+lit, comes to about 17.5 A, so the limiter trims it by a few percent; full white
+would be cut by about 40 %. Either way the limiter is what stops the LEDs from
+overloading the supply or browning out the run. **Set the limiter from the number on your
+supply's label**, not from what you think you bought.
 
 ## Presets are the interface
 

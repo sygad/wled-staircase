@@ -143,7 +143,7 @@ def main():
     p.add_argument("--fade-out", type=int, default=2000, help="ms for the All preset to fade away (default 2000)")
     p.add_argument("--danger-in", type=int, default=200, help="ms for Danger to fade up (default 200)")
     p.add_argument("--danger-out", type=int, default=500, help="ms for Danger to fade away (default 500)")
-    p.add_argument("--max-ma", type=int, default=26000, help="power limit in mA, ~85%% of your supply")
+    p.add_argument("--max-ma", type=int, default=17000, help="power limit in mA, ~85%% of your supply")
     p.add_argument("--led-ma", type=int, default=55, help="mA per LED at full white (default 55)")
     p.add_argument("--brightness", type=int, default=255)
     p.add_argument("--colour-order", type=int, default=0, help="0 = GRB (WS2812B), 1 = RGB")
